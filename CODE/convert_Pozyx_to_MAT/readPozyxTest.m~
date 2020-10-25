@@ -1,0 +1,9 @@
+clearvars;
+close all;
+clc;
+
+cd(fileparts(mfilename('fullpath')));
+addpath(genpath(fileparts(mfilename('fullpath'))));
+
+dir('test\**')
+

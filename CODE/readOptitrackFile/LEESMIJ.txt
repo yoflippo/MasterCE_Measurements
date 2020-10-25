@@ -1,0 +1,19 @@
+DOWNLOAD ALLE BESTANDEN EN FOLDERS (KLIK OP DOWNLOAD -> Download as .zip)!!
+
+--------------------
+Pak dan de folder uit!
+Open het eerste Matlab script wat je tegen komt (zonder het woord 'function'). 
+
+Druk op F5 (in Matlab) en er wordt een 'Open filedialog' geopend.
+Kies het C3D bestand en selecteer de kanalen (lees: markers).
+Als het script klaar is met uitvoeren staat de 3d data van alle geselecteerde kanalen in de workspace.
+Onderaan het script staat voorbeeld code.
+--------------------
+
+
+
+Op zoek naar handleidingen? -> www.bewegingstechnologie.com/handleiding
+
+Kijk voor andere info op wiki.bewegingstechnologie.com
+
+Opmerkingen of aanbevelen stuurt u naar: mjschrau@hhs.nl

@@ -1,0 +1,5 @@
+In case a DWM1001 does not properly respond anymore:
+- Connect it via USB to your computer, install the J-Link software pack from Segger
+- Follow further instruction from the MDEK1001 User manual
+- Perform a factory reset
+- Retry to connect via software
