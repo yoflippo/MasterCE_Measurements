@@ -27,6 +27,22 @@ end
     end
 end
 
+function checkValueOffsetSmallVector(testCase)
+try
+    assert(0==getShortestDistancePointAndVector([-1 -1],[-1 -1; 0 0; 1 1]))
+catch err
+    isError([nameCaller() ' ' err.message])
+end
+end
+
+function checkValueOffsetSmallVector2(testCase)
+try
+    assert(sqrt(2)==getShortestDistancePointAndVector([-2 -2],[-1 -1; 0 0; 1 1]))
+catch err
+    isError([nameCaller() ' ' err.message])
+end
+end
+
 
 
 %% Place tests ABOVE

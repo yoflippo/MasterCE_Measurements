@@ -150,7 +150,7 @@ for nL = 1:length(txt)
         idxPieceOfLineCommas = findCommasIndicesInChar(pieceOfLine);
         decawavePositions(nL,:) = extractNumbersBetweenCommasInAString(pieceOfLine,idxPieceOfLineCommas(1:4));
     else
-        decawavePositions(nL,:)  = NaN;
+        decawavePositions(nL,:)  = [NaN NaN NaN];
     end
 end
 end

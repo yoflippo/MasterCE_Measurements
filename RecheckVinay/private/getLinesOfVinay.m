@@ -1,11 +1,7 @@
-function coordinates = getLinesOfVinay(numberOfNeededElements)
+function coordinates = getLinesOfVinay()
 % Return the coordinates of the lines that Vinay supposedly marked when performing his
 % measurements in the field (with ropes, see his thesis).
-coordinatesPointsOfLines = [3 3 15 15 6; 3 24 24 3 3]';
-
-error(['implement in such a way that length of lines are scaled with number' newline
-    'of element, input count and output count should be the same']);
-
+coordinatesPointsOfLines = fliplr([3 3 15 15 6; 3 24 24 3 3])';
 coordinates = give2pointsThatFormALineALotOfSubpoints(coordinatesPointsOfLines);
 end
 

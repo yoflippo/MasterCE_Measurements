@@ -1,30 +1,23 @@
-function [resultWithDistances] = getShortestDistanceOfVinayData(result,walkinglines)
+function [result] = getShortestDistanceOfVinayData(result,walkinglines)
+result.shortestdis.murphy = goOverDataPoints(result.murphy.coord,walkinglines);
+result.shortestdis.decawave = goOverDataPoints(result.decawaveStuff.decawavePositions(:,1:2),walkinglines);
+result.shortestdis.larsson = goOverDataPoints(result.larsson.coord,walkinglines);
 
-resultWithDistances = goOverDataPoints(result.murphy.coord,walkinglines);
+result.shortestdis.sums.murphy = sum(result.shortestdis.murphy);
+result.shortestdis.sums.decawave = sum(result.shortestdis.decawave);
+result.shortestdis.sums.larsson = sum(result.shortestdis.larsson);
 end
 
 function distances = goOverDataPoints(vector,walkinglines)
 for nV = 1:length(vector)
-    selection = getSelectionWalkingLines(i,vector,walkinglines)
     distances(nV) = getShortestDistancePointAndVector(vector(nV,:),walkinglines);
 end
+distances = makeInfOrNaNEqualToZero(distances);
 end
 
-function selection = getSelectionWalkingLines(i,vector,walkinglines)
-% To prevent that the start UWB datapoints get confused with the ending UWB
-% datapoints which are close together.
-progression = i/length(vector);
-lowerbound = 0.33;
-upperbound = 0.66;
-idxLowerbound = round(length(walkinglines)*lowerbound);
-idxUpperbound = round(length(walkinglines)*upperbound);
-
-if progression > lowerbound && progression < upperbound
-    selection = walkinglines(idxLowerbound:idxUpperbound);
-elseif progression <= lowerbound
-    selection = walkinglines(1:idxLowerbound);
-else
-    selection = walkinglines(idxUpperbound:end);
-end
+function out = makeInfOrNaNEqualToZero(matrix)
+out = matrix;
+out(out==Inf)=0;
+out(isnan(out))=0;
 end
 
