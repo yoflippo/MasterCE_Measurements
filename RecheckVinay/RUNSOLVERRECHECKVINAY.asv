@@ -11,8 +11,6 @@ addpath(genpath(ap.SIMULATION));
 nm.testData = 'SOURCE_DATA';
 ap.testData = fullfile(ap.thisFile,nm.testData);
 
-walkingLines = getLinesOfVinay();
-
 try
     cd(ap.testData);
     %     txtfile = makeFullPathFromDirOutput(dir('*.txt'));
@@ -30,14 +28,20 @@ rmpath(genpath(ap.RecheckVinay));
 rmpath(genpath(ap.SIMULATION));
 
 
-    function plotToCompareDecawaveWithMurphy(results)
-        scatter(walkingLines(:,1),walkingLines(:,2),'k.','Linewidth',1);
-        hold on;
-        scatter(results.decawaveStuff.decawavePositions(:,1),...
-            results.decawaveStuff.decawavePositions(:,2),'bs','Linewidth',2)
-        scatter(results.murphy.coord(:,1),results.murphy.coord(:,2),'r*','Linewidth',2)
-        scatter(results.larsson.coord(:,1),results.larsson.coord(:,2),'gx','Linewidth',2)
-        grid on; grid minor;
-        xlabel('x-coordinates'); ylabel('y-coordinates');
-    end
+end
+
+
+
+
+
+function plotToCompareDecawaveWithMurphy(results)
+walkingLines = getLinesOfVinay();
+scatter(walkingLines(:,1),walkingLines(:,2),'k','Linewidth',0.5);
+hold on;
+scatter(results.decawaveStuff.decawavePositions(:,1),...
+    results.decawaveStuff.decawavePositions(:,2),'bs','Linewidth',2)
+scatter(results.murphy.coord(:,1),results.murphy.coord(:,2),'r*','Linewidth',2)
+scatter(results.larsson.coord(:,1),results.larsson.coord(:,2),'gx','Linewidth',2)
+grid on; grid minor;
+xlabel('x-coordinates'); ylabel('y-coordinates');
 end
