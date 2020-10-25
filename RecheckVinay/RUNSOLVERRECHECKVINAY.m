@@ -29,7 +29,6 @@ end
 rmpath(genpath(ap.RecheckVinay));
 rmpath(genpath(ap.SIMULATION));
 
-
     function plotToCompareDecawaveWithMurphy(results)
         scatter(walkingLines(:,1),walkingLines(:,2),'k.','Linewidth',1);
         hold on;
