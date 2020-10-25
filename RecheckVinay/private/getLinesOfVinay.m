@@ -1,7 +1,11 @@
-function coordinates = getLinesOfVinay()
+function coordinates = getLinesOfVinay(numberOfNeededElements)
 % Return the coordinates of the lines that Vinay supposedly marked when performing his
 % measurements in the field (with ropes, see his thesis).
 coordinatesPointsOfLines = [3 3 15 15 6; 3 24 24 3 3]';
+
+error(['implement in such a way that length of lines are scaled with number' newline
+    'of element, input count and output count should be the same']);
+
 coordinates = give2pointsThatFormALineALotOfSubpoints(coordinatesPointsOfLines);
 end
 
@@ -29,3 +33,6 @@ subpoints = [linspace(point1(1),point2(1),1000); ...
     linspace(point1(2),point2(2),1000)]';
 end
 
+function  out = makeSamenLength(vector,numberOfElements)
+interp1(x,v,xq,'spline')
+end

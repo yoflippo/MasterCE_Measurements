@@ -11,21 +11,22 @@ addpath(genpath(ap.SIMULATION));
 nm.testData = 'SOURCE_DATA';
 ap.testData = fullfile(ap.thisFile,nm.testData);
 
-walkingLines = getLinesOfVinay();
 
-try
-    cd(ap.testData);
-    %     txtfile = makeFullPathFromDirOutput(dir('*.txt'));
-    
-    txtfile = makeFullPathFromDirOutput(dir('ln_expt2_p2_t3.txt'));
-    cd(ap.thisFile)
-    
-    for nF = 1:length(txtfile)
-        result = runSolversOnSingleFile(txtfile(nF).fullPath);
-    end
-    plotToCompareDecawaveWithMurphy(result)
-catch
+
+
+cd(ap.testData);
+%     txtfile = makeFullPathFromDirOutput(dir('*.txt'));
+
+txtfile = makeFullPathFromDirOutput(dir('ln_expt2_p2_t3.txt'));
+cd(ap.thisFile)
+
+for nF = 1:length(txtfile)
+    result = runSolversOnSingleFile(txtfile(nF).fullPath);
 end
+walkingLines = getLinesOfVinay(length(result.murphy.coord));
+resultWithDistances = getShortestDistanceOfVinayData(result,walkingLines);
+plotToCompareDecawaveWithMurphy(result)
+
 rmpath(genpath(ap.RecheckVinay));
 rmpath(genpath(ap.SIMULATION));
 
