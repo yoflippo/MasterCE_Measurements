@@ -1,43 +1,67 @@
-function RUNSOLVERRECHECKVINAY()
-close all; clc;
+close all; clearvars; clc;
 [ap.thisFile, nm.CurrFile] = fileparts(mfilename('fullpath'));
 
-cd(ap.thisFile); cd ..
-ap.RecheckVinay = fullfile(pwd,'RecheckVinay'); cd ..
+cd(ap.thisFile);
+nm.OUTPUT = 'OUTPUT';
+ap.OUTPUT = fullfile(pwd,nm.OUTPUT);
+cd ..
+ap.RecheckVinay = fullfile(pwd,'RecheckVinay');
+ap.CODE = fullfile(pwd,'CODE'); cd ..
 ap.SIMULATION = fullfile(pwd,'SIMULATION');
+
 addpath(genpath(ap.RecheckVinay));
 addpath(genpath(ap.SIMULATION));
+addpath(genpath(ap.CODE));
 
 nm.testData = 'SOURCE_DATA';
 ap.testData = fullfile(ap.thisFile,nm.testData);
 
+cleanOutputDir(ap.OUTPUT);
+txtfiles = getMeasurementFilesInTxtFormatOfVinay(ap);
 
 
-
-cd(ap.testData);
-txtfile = makeFullPathFromDirOutput(dir('*.txt'));
-cd(ap.thisFile)
-
-for nF = 1:length(txtfile)
-    result = runSolversOnSingleFile(txtfile(nF).fullPath);
+for nF = 1:length(txtfiles)
+    result = runSolversOnSingleFile(txtfiles(nF).fullPath);
+    result.file = txtfiles(nF);
     walkingLines = getLinesOfVinay();
-    plotToCompareDecawaveWithMurphy(result)
-    resultWithDistances = getShortestDistanceOfVinayData(result,walkingLines);
+    plotToCompareDecawaveWithMurphy(result,walkingLines,ap)
+    result.distances = getShortestDistanceOfVinayData(result,walkingLines);
+    preparedOutputName = replace(txtfiles(nF).name,'.txt','.mat');
+    preparedOutputName = fullfile(ap.OUTPUT,preparedOutputName);
+    save(preparedOutputName,'result');
 end
+
+makePdfOfImagesAndResults(ap.OUTPUT);
 
 
 rmpath(genpath(ap.RecheckVinay));
 rmpath(genpath(ap.SIMULATION));
 
-    function plotToCompareDecawaveWithMurphy(results)
-        close all;
-        scatter(walkingLines(:,1),walkingLines(:,2),'k.','Linewidth',1);
-        hold on;
-        scatter(results.decawaveStuff.decawavePositions(:,1),...
-            results.decawaveStuff.decawavePositions(:,2),'bs','Linewidth',2)
-        scatter(results.murphy.coord(:,1),results.murphy.coord(:,2),'r*','Linewidth',2)
-        scatter(results.larsson.coord(:,1),results.larsson.coord(:,2),'gx','Linewidth',2)
-        grid on; grid minor;
-        xlabel('x-coordinates'); ylabel('y-coordinates');
-    end
+function plotToCompareDecawaveWithMurphy(results,walkingLines,ap)
+close all;
+figure('units','normalized','outerposition',[0 0 0.5 0.5],'Visible','off');
+
+scatter(walkingLines(:,1),walkingLines(:,2),'k.','Linewidth',1);
+hold on;
+scatter(results.decawaveStuff.decawavePositions(:,1),...
+    results.decawaveStuff.decawavePositions(:,2),'bs','Linewidth',2)
+scatter(results.murphy.coord(:,1),results.murphy.coord(:,2),'r*','Linewidth',2)
+scatter(results.larsson.coord(:,1),results.larsson.coord(:,2),'gx','Linewidth',2)
+grid on; grid minor;
+xlabel('x-coordinates'); ylabel('y-coordinates');
+
+saveTightFigure(gcf,replace(fullfile(ap.OUTPUT,results.file.name),'.txt','.png'));
+end
+
+function cleanOutputDir(ap)
+if exist(ap,'dir')
+    rmdir(ap,'s');
+end
+mkdir(ap);
+end
+
+function txtfile = getMeasurementFilesInTxtFormatOfVinay(ap)
+cd(ap.testData);
+txtfile = makeFullPathFromDirOutput(dir('*.txt'));
+cd(ap.thisFile)
 end
