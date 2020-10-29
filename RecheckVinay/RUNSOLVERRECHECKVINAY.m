@@ -49,13 +49,16 @@ scatter(results.murphy.coord(:,1),results.murphy.coord(:,2),'r*','Linewidth',2)
 scatter(results.larsson.coord(:,1),results.larsson.coord(:,2),'gx','Linewidth',2)
 grid on; grid minor;
 xlabel('x-coordinates'); ylabel('y-coordinates');
-
+xlim([0 20]); ylim([2 26]);
 saveTightFigure(gcf,replace(fullfile(ap.OUTPUT,results.file.name),'.txt','.png'));
 end
 
 function cleanOutputDir(ap)
 if exist(ap,'dir')
+    try
     rmdir(ap,'s');
+    catch
+    end
 end
 mkdir(ap);
 end

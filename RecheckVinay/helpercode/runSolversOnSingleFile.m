@@ -22,7 +22,7 @@ end
         try
             tmp = NaNifAllAreZero(func(data));
             tmp = NaNifAllAnyAreBelowZero(tmp);
-            out = NaNifAllAreOutsidePerimeter(tmp,25);
+            out = NaNifAllAreOutsidePerimeter(tmp,250);
         catch
             out = NaN(1:2);
         end

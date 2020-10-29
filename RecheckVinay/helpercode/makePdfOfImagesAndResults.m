@@ -2,7 +2,8 @@ function dirPdf = makePdfOfImagesAndResults(apImagesAndMatFiles)
 copyTemplateFolderToApSourceAndRename(apImagesAndMatFiles);
 cd(apImagesAndMatFiles);
 
-createImagePages(apImagesAndMatFiles);
+matresults = createImagePages(apImagesAndMatFiles);
+latexTable = makeOneFinalTable(matresults);
 fillTheTemplateWithReferencesToSeparateTexFiles(apImagesAndMatFiles);
 nameTemplate = renameTemplateTex(apImagesAndMatFiles);
 dos(['xelatex ' nameTemplate]);
@@ -21,7 +22,7 @@ nameTemplate = [currentDirectory '.tex'];
 movefile('template.tex',nameTemplate);
 end
 
-function createImagePages(ap)
+function matresults = createImagePages(ap)
 matfiles = dir('*.mat');
 apMatFiles = makeFullPathFromDirOutput(matfiles);
 for nF = 1:length(matfiles)
@@ -29,6 +30,8 @@ for nF = 1:length(matfiles)
         apCurrentFile = apMatFiles(nF);
         nmImage = replace(apCurrentFile.name,'.mat','.png');
         load(apCurrentFile.fullPath);
+        matresults(nF).results = result;
+     
         if nF < 10
             currentTexFileName = ['0' num2str(nF) '.tex'];
         else
@@ -101,3 +104,38 @@ else
 end
 end
 
+
+function apOutTable = makeOneFinalTable(matresults)
+[input.data,input.tableRowLabels] = getMatrixFromResults(matresults);
+input.tablePositioning = 'h';
+input.tableColLabels = {'Decawave','Murphy','Larsson'};
+input.dataFormat = {'%.3f',3}; % three digits precision for first two columns, one digit for the last
+input.dataNanString = '-';
+input.tableColumnAlignment = 'l';
+input.booktabs = 1;
+input.tableCaption = 'MyTableCaption';
+input.tableLabel = 'MyTableLabel';
+input.makeCompleteLatexDocument = 0;
+apOutTable = saveFinalTableInTex(latexTable(input));
+end
+
+
+function apOutTable = saveFinalTableInTex(latexTable)
+nameTemplate = 'template_empty_page.tex';
+txt = readTxtFile(nameTemplate);
+txt = replace(txt,'<title>','Summary');
+txt = [txt{1}; latexTable];
+apOutTable = fullfile(pwd,'summaryTable.tex');
+writeTxtfile(apOutTable,txt);
+end
+
+
+function [matrix, rowlabels] = getMatrixFromResults(r)
+for nL = 1:length(r)
+    matrix(nL,:) = [r(nL).results.distances.rmse.decawave ...
+        r(nL).results.distances.rmse.murphy ...
+        r(nL).results.distances.rmse.larsson];
+    rowlabels{nL} = replace(r(nL).results.file.name,'.txt','');
+    rowlabels{nL} = replace(rowlabels{nL},'_','\_');
+end
+end
