@@ -6,7 +6,7 @@ nm.OUTPUT = 'OUTPUT';
 ap.OUTPUT = fullfile(pwd,nm.OUTPUT);
 cd ..
 ap.RecheckVinay = fullfile(pwd,'RecheckVinay');
-ap.CODE = fullfile(pwd,'CODE'); cd ..
+ap.CODE = fullfile(pwd,'helpercode'); cd ..
 ap.SIMULATION = fullfile(pwd,'SIMULATION');
 
 addpath(genpath(ap.RecheckVinay));
@@ -31,7 +31,11 @@ for nF = 1:length(txtfiles)
 end
 
 [dirPdf,matresults] = makePdfOfImagesAndResults(ap.OUTPUT);
+cd ..
+save('RUNSOLVERRECHECKVINAY.mat','matresults');
 
+
+plotViolinPlots(matresults)
 plotCDFsOfDistances(matresults)
 
 

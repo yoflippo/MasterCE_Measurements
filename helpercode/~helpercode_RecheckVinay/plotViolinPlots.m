@@ -1,4 +1,4 @@
-function plotCDFsOfDistances(r)
+function plotViolinPlots(r)
 distancesMurphy = [];
 distancesDecawave = [];
 distancesLarsson = [];
@@ -15,21 +15,17 @@ close all;
 
 
 function allinone()
-figure('WindowState','maximized','Visible','off'); hold on; 
-
-h1 = cdfplot(distancesDecawave);
-h2 = cdfplot(distancesMurphy); 
-h3 = cdfplot(distancesLarsson); 
-h4 = cdfplot(distancesFaber); 
-
-set(h1,'LineWidth',2)
-set(h2,'LineWidth',2)
-set(h3,'LineWidth',2)
-set(h4,'LineWidth',2)
-
-grid on; grid minor; 
-legend('Decawave','Murphy','Larsson','Faber');
-xlabel('distance error [m]'); title('CDF positioning error');
+figure('WindowState','maximized','Visible','on');
+violinplot([distancesDecawave' distancesMurphy' distancesLarsson' distancesFaber'], ...
+    {'Decawave' 'Murphy' 'Larsson' 'Faber'},'MedianColor',[1 0 0],'ShowMean',true )
+            %     'ShowNotches'  Whether to show notch indicators.
+            %                    Defaults to false
+            %     'ShowMean'     Whether to show mean indicator.
+            %                    Defaults to false
+grid on; grid minor; title('Violin plots of distances from "reference"');
+ylim([0 2])
+% set(gca, 'YScale', 'log')
+% ylim([0 10])
 
 saveTightFigure(gcf,'CDF_VinayMeasurements.png');
 end
