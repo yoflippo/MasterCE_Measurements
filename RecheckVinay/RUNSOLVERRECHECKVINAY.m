@@ -1,4 +1,4 @@
-close all; clearvars; clc;
+close all; clc;
 [ap.thisFile, nm.CurrFile] = fileparts(mfilename('fullpath'));
 
 cd(ap.thisFile);
@@ -19,7 +19,6 @@ ap.testData = fullfile(ap.thisFile,nm.testData);
 cleanOutputDir(ap.OUTPUT);
 txtfiles = getMeasurementFilesInTxtFormatOfVinay(ap);
 
-
 for nF = 1:length(txtfiles)
     result = runSolversOnSingleFile(txtfiles(nF).fullPath);
     result.file = txtfiles(nF);
@@ -31,7 +30,22 @@ for nF = 1:length(txtfiles)
     save(preparedOutputName,'result');
 end
 
-makePdfOfImagesAndResults(ap.OUTPUT);
+[dirPdf,matresults] = makePdfOfImagesAndResults(ap.OUTPUT);
+
+plotCDFsOfDistances(matresults)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 rmpath(genpath(ap.RecheckVinay));
@@ -68,3 +82,4 @@ cd(ap.testData);
 txtfile = makeFullPathFromDirOutput(dir('*.txt'));
 cd(ap.thisFile)
 end
+

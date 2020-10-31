@@ -1,4 +1,4 @@
-function dirPdf = makePdfOfImagesAndResults(apImagesAndMatFiles)
+function [dirPdf,matresults] = makePdfOfImagesAndResults(apImagesAndMatFiles)
 copyTemplateFolderToApSourceAndRename(apImagesAndMatFiles);
 cd(apImagesAndMatFiles);
 
@@ -30,7 +30,7 @@ for nF = 1:length(matfiles)
         apCurrentFile = apMatFiles(nF);
         nmImage = replace(apCurrentFile.name,'.mat','.png');
         load(apCurrentFile.fullPath);
-        matresults(nF).results = result;
+        matresults(nF) = result;
      
         if nF < 10
             currentTexFileName = ['0' num2str(nF) '.tex'];
@@ -106,8 +106,10 @@ end
 
 
 function apOutTable = makeOneFinalTable(matresults)
-[input.data,input.tableRowLabels] = getMatrixFromResults(matresults);
-input.tablePositioning = 'h';
+[data,input.tableRowLabels] = getMatrixFromResults(matresults);
+
+input.data = data;
+input.tablePositioning = 'H';
 input.tableColLabels = {'Decawave','Murphy','Larsson'};
 input.dataFormat = {'%.3f',3}; % three digits precision for first two columns, one digit for the last
 input.dataNanString = '-';
@@ -116,7 +118,38 @@ input.booktabs = 1;
 input.tableCaption = 'MyTableCaption';
 input.tableLabel = 'MyTableLabel';
 input.makeCompleteLatexDocument = 0;
-apOutTable = saveFinalTableInTex(latexTable(input));
+summary = latexTable(input);
+
+[R,P]= corrcoef(input.data(:,2), input.data(:,3), 'alpha', 0.001);
+correlation = min(min(R));
+pvalue = min(min(P));
+input = rmfield(input,'tableRowLabels');
+input.tableColLabels = {'Correlation','p-value'};
+input.data = [correlation pvalue];
+input.dataFormat = {'%.6f',2};
+input.tableCaption = 'Pearson correlation Murphy/Larsson, alpha = 0.001';
+input.tableLabel = 'table:stats';
+similarity = latexTable(input);
+
+means = mean(data);
+stds = std(data);
+input.data = [means; stds;];
+input.tableRowLabels = {'Mean' 'STD'};
+input.tableColLabels = {'Decawave','Murphy','Larsson'};
+input.dataFormat = {'%.3f',3}; % three digits precision for first two columns, one digit for the last
+input.dataNanString = '-';
+input.tableColumnAlignment = 'l';
+input.booktabs = 1;
+input.tableCaption = 'Descriptive statistics';
+input.tableLabel = 'MyTableLabel';
+input.makeCompleteLatexDocument = 0;
+stats = latexTable(input);
+
+combined = [summary; newline; '\vspace{2em}'; newline; ...
+    stats; newline; '\vspace{2em}'; newline; ...
+    similarity];
+
+apOutTable = saveFinalTableInTex(combined);
 end
 
 
@@ -132,10 +165,10 @@ end
 
 function [matrix, rowlabels] = getMatrixFromResults(r)
 for nL = 1:length(r)
-    matrix(nL,:) = [r(nL).results.distances.rmse.decawave ...
-        r(nL).results.distances.rmse.murphy ...
-        r(nL).results.distances.rmse.larsson];
-    rowlabels{nL} = replace(r(nL).results.file.name,'.txt','');
+    matrix(nL,:) = [r(nL).distances.rmse.decawave ...
+        r(nL).distances.rmse.murphy ...
+        r(nL).distances.rmse.larsson];
+    rowlabels{nL} = replace(r(nL).file.name,'.txt','');
     rowlabels{nL} = replace(rowlabels{nL},'_','\_');
 end
 end

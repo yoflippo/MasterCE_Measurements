@@ -273,5 +273,5 @@ disp(char(latex));
 msheader{1} = '% \usepackage{siunitx}';
 msheader{2} = '\sisetup{round-mode=figures,round-precision=3}';
 msheader = msheader';
-latex = [msheader; latex]
+latex = [msheader; latex];
 end

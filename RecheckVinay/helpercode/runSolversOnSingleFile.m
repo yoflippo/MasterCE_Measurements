@@ -12,6 +12,8 @@ for nR = 1:length(solverData.distances)
             SpecificCleanupForVinayMeasurement(data,@runOnLarsson);
         result.murphy.coord(nR,:) = ...
             SpecificCleanupForVinayMeasurement(data,@runOnMurphy1);
+        result.faber.coord(nR,:) = ...
+            SpecificCleanupForVinayMeasurement(data,@runOnFaber);
     catch err
         warning([err.message ', index: ' num2str(nR)])
     end
@@ -22,7 +24,7 @@ end
         try
             tmp = NaNifAllAreZero(func(data));
             tmp = NaNifAllAnyAreBelowZero(tmp);
-            out = NaNifAllAreOutsidePerimeter(tmp,250);
+            out = NaNifAllAreOutsidePerimeter(tmp,26);
         catch
             out = NaN(1:2);
         end
@@ -34,6 +36,11 @@ end
 
     function [result] = runOnMurphy1(data)
         result(1:2) = solver_murphy_1(data.Distances(:),data.AnchorPositions)';
+    end
+
+    function [result] = runOnFaber(data)
+        tmp = solver_fabert_lin2a(data.Distances(:)',data.AnchorPositions)';
+        result = tmp(1:2);
     end
 
     function out = NaNifAllAreZero(coordinates)
