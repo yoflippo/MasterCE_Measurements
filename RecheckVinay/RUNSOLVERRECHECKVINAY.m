@@ -6,12 +6,14 @@ nm.OUTPUT = 'OUTPUT';
 ap.OUTPUT = fullfile(pwd,nm.OUTPUT);
 cd ..
 ap.RecheckVinay = fullfile(pwd,'RecheckVinay');
-ap.CODE = fullfile(pwd,'helpercode'); cd ..
+ap.HELPER_CHECKVINAY = fullfile(pwd,'helpercode'); cd ..
 ap.SIMULATION = fullfile(pwd,'SIMULATION');
+ap.HELPER = fullfile(pwd,'helpercode');
 
 addpath(genpath(ap.RecheckVinay));
 addpath(genpath(ap.SIMULATION));
-addpath(genpath(ap.CODE));
+addpath(genpath(ap.HELPER_CHECKVINAY));
+addpath(genpath(ap.HELPER));
 
 nm.testData = 'SOURCE_DATA';
 ap.testData = fullfile(ap.thisFile,nm.testData);

@@ -15,7 +15,7 @@ close all;
 
 
 function allinone()
-figure('WindowState','maximized','Visible','on');
+figure('WindowState','maximized','Visible','off');
 violinplot([distancesDecawave' distancesMurphy' distancesLarsson' distancesFaber'], ...
     {'Decawave' 'Murphy' 'Larsson' 'Faber'},'MedianColor',[1 0 0],'ShowMean',true )
             %     'ShowNotches'  Whether to show notch indicators.
@@ -26,8 +26,8 @@ grid on; grid minor; title('Violin plots of distances from "reference"');
 ylim([0 2])
 % set(gca, 'YScale', 'log')
 % ylim([0 10])
-
-saveTightFigure(gcf,'CDF_VinayMeasurements.png');
+pause(0.5);
+saveTightFigure(gcf,'ViolinPlot_VinayMeasurements.png');
 end
 
 
