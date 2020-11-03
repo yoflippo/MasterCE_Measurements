@@ -1,14 +1,18 @@
 % Analysis for WMPM app data (V23+) with acc and gyro data
-function RS_200831_WMPM_app_Mark()
+function RS_WMPM_app(apCsvFileRS)
+close all;
+
+if not(exist(apCsvFileRS,'file'))
+    error([newline mfilename ': ' newline 'CSV file does not exist!' newline]);
+end
 
 ap = initAndAddNeededPaths();
-% ap.measurement = openCSVfileOfWMPM(ap);
-ap.measurement = 'D:\Dropbox\TU\03_AFSTUDEREN\UWB\MATLAB\MEASUREMENTS\MEASUREMENT_DATA\MEASUREMENTS_20200826\WMPM_MEASUREMENTS\20200826T111752Z\RienkMark – 20200826T111752Z – IMU.csv';
+ap.measurement = openCSVfileOfWMPM(apCsvFileRS);
 dataArray = importWMPMcsvData(ap.measurement);
 [name,~,timestamp,~,gyro] = separateDataInVariables(dataArray);
 wcspec = getDefaultWheelChairsSpecs();
 
-plotVal = 1;
+plotVal = 0;
 
 % Convert to 100Hz datafile
 fs = 100;
@@ -95,13 +99,16 @@ cd ..; cd ..;
 ap.helpercode = fullfile(pwd,'helpercode');
 addpath(genpath(ap.helpercodeMeasurements));
 addpath(genpath(ap.helpercode));
-ap.measurementData = findSubFolderPath(mfilename('fullpath'),'UWB','MEASUREMENTS_20200826');
 end
 
-function filename = openCSVfileOfWMPM(ap)
-cd(ap.measurementData);
-[file,path] = uigetfile(' * .csv');
-filename = fullfile(path,file);
+function filename = openCSVfileOfWMPM(apCsvFile)
+[path,file] = fileparts(apCsvFile);
+postfix = ' – IMU.csv';
+dashSymbol = ' – ';
+filenameRight = [extractBefore(file,dashSymbol) dashSymbol ...
+    extractBefore(extractAfter(file,dashSymbol),dashSymbol) ...
+    postfix];
+filename = fullfile(path,filenameRight);
 end
 
 function dataArray = importWMPMcsvData(filename)
