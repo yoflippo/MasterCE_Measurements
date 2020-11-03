@@ -13,8 +13,9 @@ files = makeFullPathFromDirOutput(files);
 for nF = 1:length(files)
     try
         RS_WMPM_app(files(nF).fullpath);
-    catch
-        error(files(nF).fullpath);
+        pause
+    catch err
+        error([files(nF).fullpath newline err.message]);
     end
 end
 

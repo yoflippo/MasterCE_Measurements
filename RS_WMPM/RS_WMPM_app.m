@@ -12,7 +12,7 @@ dataArray = importWMPMcsvData(ap.measurement);
 [name,~,timestamp,~,gyro] = separateDataInVariables(dataArray);
 wcspec = getDefaultWheelChairsSpecs();
 
-plotVal = 0;
+plotVal = 1;
 
 % Convert to 100Hz datafile
 fs = 100;
