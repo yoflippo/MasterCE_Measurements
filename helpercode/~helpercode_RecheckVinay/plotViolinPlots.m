@@ -26,7 +26,7 @@ grid on; grid minor; title('Violin plots of distances from "reference"');
 ylim([0 2])
 % set(gca, 'YScale', 'log')
 % ylim([0 10])
-pause(0.5);
+pause(2);
 saveTightFigure(gcf,'ViolinPlot_VinayMeasurements.png');
 end
 
