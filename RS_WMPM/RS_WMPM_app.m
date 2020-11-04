@@ -7,12 +7,12 @@ if not(exist(apCsvFileRS,'file'))
 end
 
 ap = initAndAddNeededPaths();
-ap.measurement = openCSVfileOfWMPM(apCsvFileRS);
+ap.measurement = checkNameOfCSVFile(apCsvFileRS);
 dataArray = importWMPMcsvData(ap.measurement);
 [name,~,timestamp,~,gyro] = separateDataInVariables(dataArray);
 wcspec = getDefaultWheelChairsSpecs();
 
-plotVal = 1;
+plotVal = 0;
 
 % Convert to 100Hz datafile
 fs = 100;
@@ -29,43 +29,42 @@ wheelTimeRaw(1:wheelStartIdx-1) = [];
 frameGyroRaw = gyro.z(isFrame(frameStartIdx:end));
 wheelGyroRaw = gyro.x(isWheel(wheelStartIdx:end));
 
+figure
+subplot(2,1,1)
+plot(frameGyroRaw)
+title('Frame Gyro Raw');
+subplot(2,1,2)
+plot(wheelGyroRaw)
+title('Wheel  Gyro Raw');
+
+
+doubleIdxFrame = diff(frameTimeRaw) == 0;
+doubleIdxWheel = diff(wheelTimeRaw) == 0;
+frameTimeRaw(doubleIdxFrame) = [];
+frameGyroRaw(doubleIdxFrame) = [];
+wheelTimeRaw(doubleIdxWheel) = [];
+wheelGyroRaw(doubleIdxWheel) = [];
+
+vecTime = 0:1/fs:max(frameTimeRaw)-0.5; %0.5 to avoid issues due to different signal lengths
+frameRotationalSpeed = interp1(frameTimeRaw,frameGyroRaw,vecTime)';
+wheelRotationalSpeed = -interp1(wheelTimeRaw,wheelGyroRaw,vecTime)'; % mind the minus sign!
+
 if plotVal
-    figure
-    plot(frameTimeRaw,frameGyroRaw)
-    hold all
-    plot(wheelTimeRaw,wheelGyroRaw)
-end
-
-doubleIdxexFrame = diff(frameTimeRaw) == 0;
-doubleIdxexWheel = diff(wheelTimeRaw) == 0;
-frameTimeRaw(doubleIdxexFrame) = [];
-frameGyroRaw(doubleIdxexFrame) = [];
-wheelTimeRaw(doubleIdxexWheel) = [];
-wheelGyroRaw(doubleIdxexWheel) = [];
-
-timeLineFull = 0:1/fs:max(frameTimeRaw)-0.5; %0.5 to avoid issues due to different signal lengths
-frameRotationalSpeed = interp1(frameTimeRaw,frameGyroRaw,timeLineFull)';
-wheelRotationalSpeed = -interp1(wheelTimeRaw,wheelGyroRaw,timeLineFull)'; % mind the minus sign!
-
-if plotVal
-    figure
-    plot(timeLineFull,frameRotationalSpeed)
-    hold all
-    plot(timeLineFull,wheelRotationalSpeed)
+    plotWheelFrameROTATIONALspeeds(vecTime,frameRotationalSpeed,wheelRotationalSpeed);
 end
 
 % Calculate speed based on wheel rotation
 whRoSpeedTotCorrected = wheelRotationalSpeed-tand(wcspec.camberAngle).*frameRotationalSpeed*cosd(wcspec.camberAngle);
 whSpeedTot = whRoSpeedTotCorrected*wcspec.wheelCirDeg;
-whSpeedTot(isnan(whSpeedTot)) = 0;
-frameRotationalSpeed(isnan(frameRotationalSpeed)) = 0;
+whSpeedTot = makeNaNZero(whSpeedTot);
+frameRotationalSpeed = makeNaNZero(frameRotationalSpeed);
 
 %%%%%% MIND THIS OPTION IS SET TO EXTRACT FOWRARD ACCELERATION FROM WHEELSPEED!
 frAccTot = diff(whSpeedTot)*fs;% calculate frame acceleration based on wheel speed
 
 % calculate frame centre speed
 frSpeedTot = whSpeedTot - (tand(frameRotationalSpeed/fs)*wcspec.wheelBase/2)*fs; %%% MIND the change in sign!
-frSpeedTot(isnan(frSpeedTot)) = 0;
+frSpeedTot = makeNaNZero(frSpeedTot);
 
 startFrame = 1; % change if required or use in a loop for section analysis
 endFrame = length(frAccTot)-1;
@@ -101,7 +100,7 @@ addpath(genpath(ap.helpercodeMeasurements));
 addpath(genpath(ap.helpercode));
 end
 
-function filename = openCSVfileOfWMPM(apCsvFile)
+function filename = checkNameOfCSVFile(apCsvFile)
 [path,file] = fileparts(apCsvFile);
 postfix = ' – IMU.csv';
 dashSymbol = ' – ';
@@ -139,4 +138,18 @@ acc.z = dataArray{:, 6};
 gyro.x = dataArray{:, 7};
 gyro.y = dataArray{:, 8};
 gyro.z = dataArray{:, 9};
+end
+
+function plotWheelFrameROTATIONALspeeds(time,frameRotVel,wheelRotVel)
+figure
+subplot(2,1,1)
+plot(time,frameRotVel)
+title('Frame rotational speed'); xlabel('time [s]');
+subplot(2,1,2)
+plot(time,wheelRotVel)
+title('Wheel rotational speed'); xlabel('time [s]');
+end
+
+function input = makeNaNZero(input)
+input(isnan(input)) = 0;
 end
