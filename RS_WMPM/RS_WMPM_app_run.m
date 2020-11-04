@@ -5,22 +5,26 @@ addpath(genpath(ap.thisFile));
 ap.measurementData = findSubFolderPath(mfilename('fullpath'),'UWB',...
     'MEASUREMENTS_20200826');
 addpath(genpath(ap.measurementData));
+nm.syncPoints = 'syncPoints.mat';
 
 files_wmpm = findWMPMFiles(ap.measurementData);
 files_opti = findCorrespondingOptitrackFiles(ap.measurementData);
+
+if not(exist(nm.syncPoints,'file'))
+    error([newline mfilename ': ' newline '<XXX>' newline]);
+else
+    load(nm.syncPoints);
+end
 
 for nF = 1:length(files_wmpm)
     currWMPM = files_wmpm(nF);
     currOPTI = files_opti(nF);
     try
         currWMPM.folder
-        RS_WMPM_app(currWMPM.fullpath);
-        distFig
-        syncPoints(nF).WMPM = getGinputsStartEnd();
-         
-        loadAndPlotOptitrackData(currOPTI.fullpath)
-        distFig
-        syncPoints(nF).OPTI.end = getGinputsStartEnd();
+        close all;
+        [wheelRotationalSpeed] = RS_WMPM_app(currWMPM.fullpath);
+        [optitrackCoordinates] = loadAndPlotOptitrackData(currOPTI.fullpath);
+        checkSynchronisation(optitrackCoordinates,wheelRotationalSpeed,syncPoints(nF,:));
     catch err
         error([files_wmpm(nF).fullpath newline err.message]);
     end
@@ -37,6 +41,7 @@ f = f(contains({f.name},'optitrack','IgnoreCase',true));
 f = makeFullPathFromDirOutput(f);
 end
 
+
 function f = findWMPMFiles(ap)
 f = findFilesWithExtension(ap,'csv');
 f = f(contains({f.name},'IMU','IgnoreCase',true));
@@ -44,39 +49,73 @@ f = f(not(contains({f.folder},'old','IgnoreCase',true)));
 f = makeFullPathFromDirOutput(f);
 end
 
-function loadAndPlotOptitrackData(apMatFile)
+
+function out = loadAndPlotOptitrackData(apMatFile,blPlotVal)
 if exist(apMatFile,'file')
     load(apMatFile);
 else
     error([newline mfilename ': ' newline 'File does not exist' newline]);
 end
 
+if not(exist('blPlotVal','var'))
+    blPlotVal = false;
+end
+
 if not(exist('optitrack','var'))
     error([newline mfilename ': ' newline 'MAT File does not contain optitrack variable' newline]);
 end
 
-x = optitrack.Tag.Coordinates(:,1);
-y = optitrack.Tag.Coordinates(:,2);
-z = optitrack.Tag.Coordinates(:,3);
-
-figure;
-subplot(3,1,1);
-plot(x); title('x coordinates OPTITRACK'); xlabel('frames number');
-subplot(3,1,2);
-plot(y); title('y coordinates OPTITRACK'); xlabel('frames number');
-subplot(3,1,3);
-plot(z); title('z coordinates OPTITRACK'); xlabel('frames number');
+out.x = optitrack.Tag.Coordinates(:,1);
+out.y = optitrack.Tag.Coordinates(:,2);
+out.z = optitrack.Tag.Coordinates(:,3);
+if blPlotVal
+    figure;
+    subplot(3,1,1); plot(out.x); title('x coordinates OPTITRACK'); xlabel('frames number');
+    subplot(3,1,2); plot(out.y); title('y coordinates OPTITRACK'); xlabel('frames number');
+    subplot(3,1,3); plot(out.z); title('z coordinates OPTITRACK'); xlabel('frames number');
 end
+end
+
 
 function out = getGinputsStartEnd(number)
 if not(exist('number','var'))
     number = 2;
-end
-
-if not(isnumeric(number))
+elseif not(isnumeric(number))
     number = 2;
 end
-
 out.start = ginput(number);
 out.end = ginput(number);
+end
+
+
+function  checkSynchronisation(o,w,sync_wo)
+oresultant = sqrt((o.x.^2) + (o.y.^2) + (o.z.^2));
+
+oresultant(isnan(oresultant))=0;
+w(isnan(w))=0;
+
+oresultantCut = selectPortionOfBegin(sync_wo(2),oresultant);
+wCut = selectPortionOfBegin(sync_wo(1),w);
+
+oresultantCut = normalize(oresultantCut);
+wCut = -normalize(wCut);
+
+figure;
+subplot(4,1,1); plot(oresultant); title('x coordinates OPTITRACK');
+subplot(4,1,2); plot(w); title('Wheel Rotational Speed');
+[Xa,Ya,D] = alignsignals(oresultantCut,wCut);
+
+subplot(4,1,3); plot(Xa); hold on; plot(Ya);
+subplot(4,1,4); plot(oresultant(sync_wo(2):end)); hold on; plot(w(sync_wo(1):end));
+    function out = selectPortionOfBegin(manualSyncMoment,data)
+        someHigherIndex = manualSyncMoment + 0.1 * length(data);
+        out = data(manualSyncMoment-200:roundn(someHigherIndex,2));
+    end
+% subplot(3,1,3); 
+% if D > 0
+%     plot(oresultant); hold on;plot(w(abs(D):end));
+% else
+%     plot(oresultant(abs(D):end)); hold on; plot(w);
+% end
+
 end
