@@ -2,6 +2,7 @@ close all; clearvars; clc;
 [ap.thisFile, nm.CurrFile] = fileparts(mfilename('fullpath'));
 cd(ap.thisFile)
 addpath(genpath(ap.thisFile));
+ap.synced = fullfile(ap.thisFile,'synced');
 ap.measurementData = findSubFolderPath(mfilename('fullpath'),'UWB',...
     'MEASUREMENTS_20200826');
 addpath(genpath(ap.measurementData));
@@ -22,17 +23,14 @@ for nF = 1:length(files_wmpm)
     try
         currWMPM.folder
         close all;
-        [RotVel_WMPM,RelCoord_WMPM] = RS_WMPM_app(currWMPM.fullpath,true);
-        [optitrackCoordinates] = loadAndPlotOptitrackData(currOPTI.fullpath,true);
-        pause;
-        %         checkSynchronisation(optitrackCoordinates,wheelRotationalSpeed,syncPoints(nF,:));
-%         saveSynchronizedMATfile(optitrackCoordinates,RotVel_WMPM.wheel,syncPoints(nF,:));
+        [WMPM.rotationvelocity,WMPM.coordinates] = RS_WMPM_app(currWMPM.fullpath);
+         [optitrackCoordinates] = loadAndPlotOptitrackData(currOPTI.fullpath);
+        saveSynchronizedMATfile(optitrackCoordinates,WMPM,syncPoints(nF,:),ap);
     catch err
         error([files_wmpm(nF).fullpath newline err.message]);
     end
 end
-
-rmpath(genpath(ap.thisFile));
+cd(ap.thisFile);
 
 
 function f = findOptitrackFiles(ap)
@@ -54,7 +52,8 @@ end
 
 function out = loadAndPlotOptitrackData(apMatFile,blPlotVal)
 if exist(apMatFile,'file')
-    load(apMatFile);
+    optitrack = load(apMatFile);
+    optitrack = optitrack.optitrack;
 else
     error([newline mfilename ': ' newline 'File does not exist' newline]);
 end
@@ -126,4 +125,21 @@ title('Manual syncing');
         someHigherIndex = manualSyncMoment + 0.1 * length(data);
         out = data(manualSyncMoment-200:roundn(someHigherIndex,2));
     end
+end
+
+function saveSynchronizedMATfile(o,wmpm,syncPoints,ap)
+        checkSynchronisation(o,wmpm.rotationvelocity.wheel,syncPoints);
+% % % % % oresultant = sqrt((o.x.^2) + (o.y.^2) + (o.z.^2));
+% % % % % w = wmpm.rotationvelocity.wheel;
+% % % % % oresultant(isnan(oresultant))=0;
+% % % % % w(isnan(w))=0;
+% % % % % 
+% % % % % oresultantCut = normalize(oresultant(syncPoints(2):end));
+% % % % % wCut = -normalize(w(syncPoints(1):end));
+% % % % % 
+% % % % % figure('units','normalized','outerposition',[0.5 0.5 0.5 0.5]);
+% % % % % subplot(2,1,1); plot(oresultantCut); title('x coordinates OPTITRACK');
+% % % % % subplot(2,1,2); plot(wCut); title('Wheel Rotational Speed');
+% % % % %         a=2;
+        
 end

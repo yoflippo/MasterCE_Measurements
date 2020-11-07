@@ -14,18 +14,21 @@ initAndAddNeededPaths();
 wcspec = getDefaultWheelChairsSpecs();
 
 fs = 100;
+firstSecondsToIgnore = 1;
 isFrame = ismember(name,'Frame');
 isWheel = ismember(name,'Wheel');
+
 frameTimeRaw = timestamp(isFrame)./1000;
-frameStartIdx = find(frameTimeRaw>0,1);
+frameGyroRaw = gyro.z(isFrame);
+frameStartIdx = find(frameTimeRaw>firstSecondsToIgnore,1);
 frameTimeRaw(1:frameStartIdx-1) = [];
+frameGyroRaw(1:frameStartIdx-1) = [];
 
 wheelTimeRaw = timestamp(isWheel)./1000;
-wheelStartIdx = find(wheelTimeRaw>0,1);
+wheelGyroRaw = gyro.x(isWheel);
+wheelStartIdx = find(wheelTimeRaw>firstSecondsToIgnore,1);
 wheelTimeRaw(1:wheelStartIdx-1) = [];
-
-frameGyroRaw = gyro.z(isFrame(frameStartIdx:end));
-wheelGyroRaw = gyro.x(isWheel(wheelStartIdx:end));
+wheelGyroRaw(1:wheelStartIdx-1) = [];
 
 doubleIdxFrame = diff(frameTimeRaw) == 0;
 doubleIdxWheel = diff(wheelTimeRaw) == 0;
@@ -33,6 +36,10 @@ frameTimeRaw(doubleIdxFrame) = [];
 frameGyroRaw(doubleIdxFrame) = [];
 wheelTimeRaw(doubleIdxWheel) = [];
 wheelGyroRaw(doubleIdxWheel) = [];
+
+if (max(wheelTimeRaw)-max(frameTimeRaw)) > 1
+    error([newline mfilename mfilename ': ' newline blanks(30) ': LOOK HERE, time difference between wheel and frame is too large' newline]);
+end
 
 vecTime = 0:1/fs:max(frameTimeRaw)-0.5; %0.5 to avoid issues due to different signal lengths
 RotVelocity.frame = interp1(frameTimeRaw,frameGyroRaw,vecTime)';
@@ -44,28 +51,12 @@ whSpeedTot = whRoSpeedTotCorrected*wcspec.wheelCirDeg;
 whSpeedTot = makeNaNZero(whSpeedTot);
 RotVelocity.frame = makeNaNZero(RotVelocity.frame);
 
-%%%%%% MIND THIS OPTION IS SET TO EXTRACT FOWRARD ACCELERATION FROM WHEELSPEED!
-frAccTot = diff(whSpeedTot)*fs;% calculate frame acceleration based on wheel speed
+frameCentreVelocity = whSpeedTot - (tand(RotVelocity.frame/fs)*wcspec.wheelBase/2)*fs; %%% MIND the change in sign!
+frameCentreVelocity = makeNaNZero(frameCentreVelocity);
+frDispl = cumtrapz(frameCentreVelocity)/fs;
 
-% calculate frame centre speed
-frSpeedTot = whSpeedTot - (tand(RotVelocity.frame/fs)*wcspec.wheelBase/2)*fs; %%% MIND the change in sign!
-frSpeedTot = makeNaNZero(frSpeedTot);
-
-startFrame = 1; % change if required or use in a loop for section analysis
-endFrame = length(frAccTot)-1;
-
-% crop signal for section analysis
-frAcc = frAccTot(startFrame:endFrame,:);
-frSpeedCropped = frSpeedTot(startFrame:endFrame,:);
-frRoSpeedCropped = RotVelocity.frame(startFrame:endFrame,:);
-
-frDispl = cumtrapz(frSpeedCropped)/fs;
-frAccWheels = diff(frSpeedCropped)*fs;
-frRoAng = cumtrapz(frRoSpeedCropped)/fs;
-frRoAcc = diff(frRoSpeedCropped)*fs;
-
-relativeCoordinates.x = cumtrapz(diff([0;frDispl]).*sind((cumtrapz(frRoSpeedCropped)/fs)));
-relativeCoordinates.y = cumtrapz(diff([0;frDispl]).*cosd((cumtrapz(frRoSpeedCropped)/fs)));
+relativeCoordinates.x = cumtrapz(diff([0;frDispl]).*sind((cumtrapz(RotVelocity.frame)/fs)));
+relativeCoordinates.y = cumtrapz(diff([0;frDispl]).*cosd((cumtrapz(RotVelocity.frame)/fs)));
 
 if blPlotVal
     plotWheelFrameROTATIONALspeeds(RotVelocity.frame,RotVelocity.wheel);
