@@ -8,7 +8,7 @@ addpath(genpath(ap.measurementData));
 nm.syncPoints = 'syncPoints.mat';
 
 files_wmpm = findWMPMFiles(ap.measurementData);
-files_opti = findCorrespondingOptitrackFiles(ap.measurementData);
+files_opti = findOptitrackFiles(ap.measurementData);
 
 if not(exist(nm.syncPoints,'file'))
     error([newline mfilename ': ' newline '<XXX>' newline]);
@@ -22,9 +22,11 @@ for nF = 1:length(files_wmpm)
     try
         currWMPM.folder
         close all;
-        [wheelRotationalSpeed] = RS_WMPM_app(currWMPM.fullpath);
-        [optitrackCoordinates] = loadAndPlotOptitrackData(currOPTI.fullpath);
-        checkSynchronisation(optitrackCoordinates,wheelRotationalSpeed,syncPoints(nF,:));
+        [RotVel_WMPM,RelCoord_WMPM] = RS_WMPM_app(currWMPM.fullpath,true);
+        [optitrackCoordinates] = loadAndPlotOptitrackData(currOPTI.fullpath,true);
+        pause;
+        %         checkSynchronisation(optitrackCoordinates,wheelRotationalSpeed,syncPoints(nF,:));
+%         saveSynchronizedMATfile(optitrackCoordinates,RotVel_WMPM.wheel,syncPoints(nF,:));
     catch err
         error([files_wmpm(nF).fullpath newline err.message]);
     end
@@ -33,7 +35,7 @@ end
 rmpath(genpath(ap.thisFile));
 
 
-function f = findCorrespondingOptitrackFiles(ap)
+function f = findOptitrackFiles(ap)
 f = findFilesWithExtension(ap,'mat');
 f = f(contains({f.name},'RS_','IgnoreCase',true));
 f = f(contains({f.name},'~','IgnoreCase',true));
@@ -100,22 +102,28 @@ wCut = selectPortionOfBegin(sync_wo(1),w);
 oresultantCut = normalize(oresultantCut);
 wCut = -normalize(wCut);
 
-figure;
-subplot(4,1,1); plot(oresultant); title('x coordinates OPTITRACK');
-subplot(4,1,2); plot(w); title('Wheel Rotational Speed');
-[Xa,Ya,D] = alignsignals(oresultantCut,wCut);
+figure('units','normalized','outerposition',[0.5 0.5 0.5 0.5]);
+subplot(5,1,1); plot(oresultant); title('x coordinates OPTITRACK');
+subplot(5,1,2); plot(w); title('Wheel Rotational Speed');
 
-subplot(4,1,3); plot(Xa); hold on; plot(Ya);
-subplot(4,1,4); plot(oresultant(sync_wo(2):end)); hold on; plot(w(sync_wo(1):end));
+[Xa,Ya,D] = alignsignals(oresultantCut,wCut);
+subplot(5,1,3); plot(Xa); hold on; plot(Ya);
+
+subplot(5,1,4);
+plot(oresultant(sync_wo(2):end));
+hold on;
+disp(['make the WMPM sync moment: ' num2str(sync_wo(1)+D)]);
+plot(w(sync_wo(1)+D:end));
+title('With optional adjustment');
+
+subplot(5,1,5);
+plot(oresultant(sync_wo(2):end));
+hold on;
+plot(w(sync_wo(1):end));
+title('Manual syncing');
+
     function out = selectPortionOfBegin(manualSyncMoment,data)
         someHigherIndex = manualSyncMoment + 0.1 * length(data);
         out = data(manualSyncMoment-200:roundn(someHigherIndex,2));
     end
-% subplot(3,1,3); 
-% if D > 0
-%     plot(oresultant); hold on;plot(w(abs(D):end));
-% else
-%     plot(oresultant(abs(D):end)); hold on; plot(w);
-% end
-
 end

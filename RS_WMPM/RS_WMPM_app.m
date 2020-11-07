@@ -1,5 +1,7 @@
 % Analysis for WMPM app data (V23+) with acc and gyro data
-function [wheelRotationalSpeed] = RS_WMPM_app(apCsvFileRS, blPlotVal)
+function [RotVelocity,relativeCoordinates] = ...
+    RS_WMPM_app(apCsvFileRS, blPlotVal)
+
 if not(exist(apCsvFileRS,'file'))
     error([newline mfilename ': ' newline 'CSV file does not exist!' newline]);
 end
@@ -33,20 +35,20 @@ wheelTimeRaw(doubleIdxWheel) = [];
 wheelGyroRaw(doubleIdxWheel) = [];
 
 vecTime = 0:1/fs:max(frameTimeRaw)-0.5; %0.5 to avoid issues due to different signal lengths
-frameRotationalSpeed = interp1(frameTimeRaw,frameGyroRaw,vecTime)';
-wheelRotationalSpeed = -interp1(wheelTimeRaw,wheelGyroRaw,vecTime)'; % mind the minus sign!
+RotVelocity.frame = interp1(frameTimeRaw,frameGyroRaw,vecTime)';
+RotVelocity.wheel = -interp1(wheelTimeRaw,wheelGyroRaw,vecTime)'; % mind the minus sign!
 
 % Calculate speed based on wheel rotation
-whRoSpeedTotCorrected = wheelRotationalSpeed-tand(wcspec.camberAngle).*frameRotationalSpeed*cosd(wcspec.camberAngle);
+whRoSpeedTotCorrected = RotVelocity.wheel-tand(wcspec.camberAngle).*RotVelocity.frame*cosd(wcspec.camberAngle);
 whSpeedTot = whRoSpeedTotCorrected*wcspec.wheelCirDeg;
 whSpeedTot = makeNaNZero(whSpeedTot);
-frameRotationalSpeed = makeNaNZero(frameRotationalSpeed);
+RotVelocity.frame = makeNaNZero(RotVelocity.frame);
 
 %%%%%% MIND THIS OPTION IS SET TO EXTRACT FOWRARD ACCELERATION FROM WHEELSPEED!
 frAccTot = diff(whSpeedTot)*fs;% calculate frame acceleration based on wheel speed
 
 % calculate frame centre speed
-frSpeedTot = whSpeedTot - (tand(frameRotationalSpeed/fs)*wcspec.wheelBase/2)*fs; %%% MIND the change in sign!
+frSpeedTot = whSpeedTot - (tand(RotVelocity.frame/fs)*wcspec.wheelBase/2)*fs; %%% MIND the change in sign!
 frSpeedTot = makeNaNZero(frSpeedTot);
 
 startFrame = 1; % change if required or use in a loop for section analysis
@@ -55,19 +57,21 @@ endFrame = length(frAccTot)-1;
 % crop signal for section analysis
 frAcc = frAccTot(startFrame:endFrame,:);
 frSpeedCropped = frSpeedTot(startFrame:endFrame,:);
-frRoSpeedCropped = frameRotationalSpeed(startFrame:endFrame,:);
+frRoSpeedCropped = RotVelocity.frame(startFrame:endFrame,:);
 
 frDispl = cumtrapz(frSpeedCropped)/fs;
 frAccWheels = diff(frSpeedCropped)*fs;
 frRoAng = cumtrapz(frRoSpeedCropped)/fs;
 frRoAcc = diff(frRoSpeedCropped)*fs;
 
+relativeCoordinates.x = cumtrapz(diff([0;frDispl]).*sind((cumtrapz(frRoSpeedCropped)/fs)));
+relativeCoordinates.y = cumtrapz(diff([0;frDispl]).*cosd((cumtrapz(frRoSpeedCropped)/fs)));
+
 if blPlotVal
-    plotWheelFrameROTATIONALspeeds(frameRotationalSpeed,wheelRotationalSpeed);
-%     figure('units','normalized','outerposition',[0.1 0.1 0.8 0.8]);
-%     plot(cumtrapz(diff([0;frDispl]).*sind((cumtrapz(frRoSpeedCropped)/fs))),...
-%         cumtrapz(diff([0;frDispl]).*cosd((cumtrapz(frRoSpeedCropped)/fs))))
-%     axis equal
+    plotWheelFrameROTATIONALspeeds(RotVelocity.frame,RotVelocity.wheel);
+    figure('units','normalized','outerposition',[0.1 0.1 0.8 0.8]);
+    plot(relativeCoordinates.x,relativeCoordinates.y)
+    axis equal
 end
 end
 
