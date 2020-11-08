@@ -69,11 +69,8 @@ end
 
 %% helper functions
 function ap = initAndAddNeededPaths()
-close all;
 ap.helpercodeMeasurements = fullfile(fileparts(fileparts(mfilename('fullpath'))),'helpercode');
-cd(ap.helpercodeMeasurements);
-cd ..; cd ..;
-ap.helpercode = fullfile(pwd,'helpercode');
+ap.helpercode = fullfile(fileparts(fileparts(ap.helpercodeMeasurements)),'helpercode');
 addpath(genpath(ap.helpercodeMeasurements));
 addpath(genpath(ap.helpercode));
 end
