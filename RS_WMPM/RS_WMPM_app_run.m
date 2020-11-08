@@ -1,6 +1,6 @@
 close all; clearvars; clc;
 [ap,nm,files,syncPoints] = init();
-iterateOverFiles(ap,files.wmpm,files.opti,syncPoints)
+iterateOverFiles(ap,files,syncPoints)
 
 
 
@@ -22,6 +22,7 @@ ap.cutPoints = fullfile(ap.thisFile,nm.cutPoints);
 
 files.wmpm = findWMPMFiles(ap.measurementData);
 files.opti = findOptitrackFiles(ap.measurementData);
+files.uwb = findUWBFiles(ap.measurementData);
 
 if not(exist(nm.syncPoints,'file'))
     error([newline mfilename ': ' newline 'syncPoints.mat not found or does not exist' newline]);
@@ -32,18 +33,19 @@ end
 end
 
 
-function iterateOverFiles(ap,files_wmpm,files_opti,syncPoints)
-for nF = 1:length(files_wmpm)
-    currWMPM = files_wmpm(nF);
-    currOPTI = files_opti(nF);
+function iterateOverFiles(ap,files,syncPoints)
+for nF = 1:length(files.wmpm)
+    currWMPM = files.wmpm(nF);
+    currOPTI = files.opti(nF);
     try
         currWMPM.folder
         close all;
         [WMPM.rotationvelocity,WMPM.coordinates] = RS_WMPM_app(currWMPM.fullpath);
-        [optitrackCoordinates] = loadAndPlotOptitrackData(currOPTI.fullpath);
-        saveSynchronizedMATfile(optitrackCoordinates,WMPM,syncPoints(nF,:),ap);
+         [coordinatesOptitrack, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
+        coordinatesUWB = trilaterateLarsson(sOptitrack,files.uwb(nF));
+        saveSynchronizedMATfile(coordinatesOptitrack,WMPM,syncPoints(nF,:),ap);
     catch err
-        error([files_wmpm(nF).fullpath newline err.message]);
+        error([files.wmpm(nF).fullpath newline err.message]);
     end
 end
 end
@@ -58,6 +60,15 @@ f = makeFullPathFromDirOutput(f);
 end
 
 
+function f = findUWBFiles(ap)
+f = findFilesWithExtension(ap,'mat');
+f = f(contains({f.name},'RS_','IgnoreCase',true));
+f = f(contains({f.name},'~','IgnoreCase',true));
+f = f(contains({f.name},'pozyx','IgnoreCase',true));
+f = makeFullPathFromDirOutput(f);
+end
+
+
 function f = findWMPMFiles(ap)
 f = findFilesWithExtension(ap,'csv');
 f = f(contains({f.name},'IMU','IgnoreCase',true));
@@ -66,7 +77,7 @@ f = makeFullPathFromDirOutput(f);
 end
 
 
-function out = loadAndPlotOptitrackData(apMatFile,blPlotVal)
+function [coordinates, optitrack] = loadAndPlotOptitrackData(apMatFile,blPlotVal)
 if exist(apMatFile,'file')
     optitrack = load(apMatFile);
     optitrack = optitrack.optitrack;
@@ -82,14 +93,14 @@ if not(exist('optitrack','var'))
     error([newline mfilename ': ' newline 'MAT File does not contain optitrack variable' newline]);
 end
 
-out.x = optitrack.Tag.Coordinates(:,1);
-out.y = optitrack.Tag.Coordinates(:,2);
-out.z = optitrack.Tag.Coordinates(:,3);
+coordinates.x = optitrack.Tag.Coordinates(:,1);
+coordinates.y = optitrack.Tag.Coordinates(:,2);
+coordinates.z = optitrack.Tag.Coordinates(:,3);
 if blPlotVal
     figure;
-    subplot(3,1,1); plot(out.x); title('x coordinates OPTITRACK'); xlabel('frames number');
-    subplot(3,1,2); plot(out.y); title('y coordinates OPTITRACK'); xlabel('frames number');
-    subplot(3,1,3); plot(out.z); title('z coordinates OPTITRACK'); xlabel('frames number');
+    subplot(3,1,1); plot(coordinates.x); title('x coordinates OPTITRACK'); xlabel('frames number');
+    subplot(3,1,2); plot(coordinates.y); title('y coordinates OPTITRACK'); xlabel('frames number');
+    subplot(3,1,3); plot(coordinates.z); title('z coordinates OPTITRACK'); xlabel('frames number');
 end
 end
 
@@ -139,6 +150,7 @@ title('Manual syncing');
     end
 end
 
+
 function saveSynchronizedMATfile(opti,wmpm,sync,ap)
 checkSynchronisation(opti,wmpm.rotationvelocity.wheel,sync);
 
@@ -155,10 +167,9 @@ subplot(2,1,2);
 plot(wCut.x); hold on;
 plot(wCut.y); title('Coordinates of gyroscope in wheel & base');
 
-% need to look @ RS-03 because it has a difference between the
-% wheelRotVelocity and coordinates
 
 end
+
 
 function out = cutFromBeginOfStruct(sSignal,beginCutPoint)
 if isfield(sSignal,'x')
