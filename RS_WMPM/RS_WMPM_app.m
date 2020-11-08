@@ -50,6 +50,7 @@ whRoSpeedTotCorrected = RotVelocity.wheel-tand(wcspec.camberAngle).*RotVelocity.
 whSpeedTot = whRoSpeedTotCorrected*wcspec.wheelCirDeg;
 whSpeedTot = makeNaNZero(whSpeedTot);
 RotVelocity.frame = makeNaNZero(RotVelocity.frame);
+RotVelocity.wheel = makeNaNZero(RotVelocity.wheel);
 
 frameCentreVelocity = whSpeedTot - (tand(RotVelocity.frame/fs)*wcspec.wheelBase/2)*fs; %%% MIND the change in sign!
 frameCentreVelocity = makeNaNZero(frameCentreVelocity);
