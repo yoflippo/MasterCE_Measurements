@@ -42,7 +42,7 @@ for nF = 1:length(files.wmpm)
         close all;
         [WMPM.rotationvelocity,WMPM.coordinates] = RS_WMPM_app(currWMPM.fullpath);
          [coordinatesOptitrack, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
-        coordinatesUWB = trilaterateLarsson(sOptitrack,files.uwb(nF));
+        coordinatesUWB = trilaterateLarssonWMPM(sOptitrack,files.uwb(nF));
         saveSynchronizedMATfile(coordinatesOptitrack,WMPM,syncPoints(nF,:),ap);
     catch err
         error([files.wmpm(nF).fullpath newline err.message]);

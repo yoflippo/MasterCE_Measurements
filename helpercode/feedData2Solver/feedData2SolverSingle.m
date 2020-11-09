@@ -15,10 +15,8 @@ else
     ap.measurements = apFolderMeasurements;
 end
 
-
 ap.simulation = findSubFolderPath(pwd,'UWB','SIMULATION');
 addpath(genpath(ap.simulation));
-
 
 cd(ap.measurements);
 files = dir(['**' filesep '*_4solver.mat']);
