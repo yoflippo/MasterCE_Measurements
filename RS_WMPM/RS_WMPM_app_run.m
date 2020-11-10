@@ -42,8 +42,8 @@ for nF = 1:length(files.wmpm)
         [coordOpti, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
         sUWB = applyLarssonToUWBwithOptitrack(sOptitrack,files.uwb(nF));
         [opti,wmpm,uwb] = syncOptiUwbWmpm(coordOpti,WMPM,sUWB,syncPoints(nF,:));
-        checkSynchronisationCoarse(opti,wmpm,uwb);
-        pause
+%         checkSynchronisationCoarse(opti,wmpm,uwb);
+        saveSyncedDataToMATfile(opti,wmpm,uwb,replace(currOPTI.name,'_optitrack',''));
     catch err
         error([files.wmpm(nF).fullpath newline err.message]);
     end
@@ -116,6 +116,41 @@ out.end = ginput(number);
 end
 
 
+function  checkSynchronisationFineGrained(o,w,sync_wo)
+oresultant = sqrt((o.x.^2) + (o.y.^2) + (o.z.^2));
+
+oresultantCut = selectPortionOfBegin(sync_wo(2),oresultant);
+wCut = selectPortionOfBegin(sync_wo(1),w);
+
+oresultantCut = normalize(oresultantCut);
+wCut = -normalize(wCut);
+
+figure('units','normalized','outerposition',[0.5 0.5 0.5 0.5]);
+subplot(5,1,1); plot(oresultant); title('x coordinates OPTITRACK');
+subplot(5,1,2); plot(w); title('Wheel Rotational Speed');
+
+[Xa,Ya,D] = alignsignals(oresultantCut,wCut);
+subplot(5,1,3); plot(Xa); hold on; plot(Ya); title('With alignsignal()');
+
+subplot(5,1,4);
+plot(normalize(oresultant(sync_wo(2):end)));
+hold on;
+disp(['make the WMPM sync moment: ' num2str(sync_wo(1)+D)]);
+plot(-normalize(w(sync_wo(1)+D:end))); title('With optional adjustment');
+
+subplot(5,1,5);
+plot(normalize(oresultant(sync_wo(2):end)));
+hold on;
+plot(-normalize(w(sync_wo(1):end)));
+title('Manual syncing');
+
+    function out = selectPortionOfBegin(manualSyncMoment,data)
+        someHigherIndex = manualSyncMoment + 0.1 * length(data);
+        out = data(manualSyncMoment-200:roundn(someHigherIndex,2));
+    end
+end
+
+
 function checkSynchronisationCoarse(opti,wmpm,uwb)
 figure('units','normalized','outerposition',[0.1 0.1 0.7 0.7]);
 
@@ -173,7 +208,6 @@ cutData = cutFromBeginOfStruct(makeXYZstruct(uwbCoordinates),minIndex);
 cutIdx = minIndex;
 end
 
-
 function sxyz = makeXYZstruct(matrix)
 [r,c] = size(matrix);
 if not(r==3 || c==3)
@@ -189,4 +223,10 @@ end
 sxyz.x = mat(:,1);
 sxyz.y = mat(:,2);
 sxyz.z = mat(:,3);
+end
+
+function saveSyncedDataToMATfile(opti,wmpm,uwb,matfile)
+mkdirIf('synced');
+cd('synced');
+save(matfile);
 end
