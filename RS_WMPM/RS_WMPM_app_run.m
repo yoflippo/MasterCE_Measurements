@@ -1,8 +1,6 @@
 close all; clearvars; clc;
 [ap,nm,files,syncPoints] = init();
-iterateOverFiles(ap,files,syncPoints)
-
-
+iterateOverFiles(files,syncPoints,ap)
 
 
 
@@ -33,7 +31,7 @@ end
 end
 
 
-function iterateOverFiles(ap,files,syncPoints)
+function iterateOverFiles(files,syncPoints,ap)
 for nF = 1:length(files.wmpm)
     currWMPM = files.wmpm(nF);
     currOPTI = files.opti(nF);
@@ -41,9 +39,11 @@ for nF = 1:length(files.wmpm)
         currWMPM.folder
         close all;
         [WMPM.rotationvelocity,WMPM.coordinates] = RS_WMPM_app(currWMPM.fullpath);
-         [coordinatesOptitrack, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
-        coordinatesUWB = trilaterateLarssonWMPM(sOptitrack,files.uwb(nF));
-        saveSynchronizedMATfile(coordinatesOptitrack,WMPM,syncPoints(nF,:),ap);
+        [coordOpti, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
+        sUWB = applyLarssonToUWBwithOptitrack(sOptitrack,files.uwb(nF));
+        [opti,wmpm,uwb] = syncOptiUwbWmpm(coordOpti,WMPM,sUWB,syncPoints(nF,:));
+        checkSynchronisationCoarse(opti,wmpm,uwb);
+        pause
     catch err
         error([files.wmpm(nF).fullpath newline err.message]);
     end
@@ -93,9 +93,9 @@ if not(exist('optitrack','var'))
     error([newline mfilename ': ' newline 'MAT File does not contain optitrack variable' newline]);
 end
 
-coordinates.x = optitrack.Tag.Coordinates(:,1);
-coordinates.y = optitrack.Tag.Coordinates(:,2);
-coordinates.z = optitrack.Tag.Coordinates(:,3);
+coordinates.x = optitrack.Tag.Coordinates(:,1)*10;
+coordinates.y = optitrack.Tag.Coordinates(:,2)*10;
+coordinates.z = optitrack.Tag.Coordinates(:,3)*10;
 if blPlotVal
     figure;
     subplot(3,1,1); plot(coordinates.x); title('x coordinates OPTITRACK'); xlabel('frames number');
@@ -116,7 +116,7 @@ out.end = ginput(number);
 end
 
 
-function  checkSynchronisation(o,w,sync_wo)
+function  checkSynchronisationFineGrained(o,w,sync_wo)
 oresultant = sqrt((o.x.^2) + (o.y.^2) + (o.z.^2));
 
 oresultantCut = selectPortionOfBegin(sync_wo(2),oresultant);
@@ -151,23 +151,39 @@ title('Manual syncing');
 end
 
 
-function saveSynchronizedMATfile(opti,wmpm,sync,ap)
-checkSynchronisation(opti,wmpm.rotationvelocity.wheel,sync);
+function checkSynchronisationCoarse(opti,wmpm,uwb)
+figure('units','normalized','outerposition',[0.1 0.1 0.7 0.7]);
 
-optiCut = cutFromBeginOfStruct(opti,sync(2));
-wCut = cutFromBeginOfStruct(wmpm.coordinates,sync(1));
+subplot(3,1,1);
+plot(opti.time,opti.coord.x); hold on;
+plot(opti.time,opti.coord.y);
+plot(opti.time,opti.coord.z); title('Coordinates form Optitrack');
+grid on; grid minor;
 
-figure('units','normalized','outerposition',[0 0 0.5 0.5]);
-subplot(2,1,1);
-plot(optiCut.x); hold on;
-plot(optiCut.y);
-plot(optiCut.z);title('Coordinates form Optitrack');
+subplot(3,1,2);
+plot(wmpm.time,wmpm.coord.x); hold on;
+plot(wmpm.time,wmpm.coord.y); title('Coordinates of gyroscope in wheel & base');
+grid on; grid minor;
 
-subplot(2,1,2); 
-plot(wCut.x); hold on;
-plot(wCut.y); title('Coordinates of gyroscope in wheel & base');
+subplot(3,1,3);
+plot(uwb.time, uwb.coord.x); hold on;
+plot(uwb.time, uwb.coord.y);
+plot(uwb.time, uwb.coord.z); title('Coordinates form UWB');
+ylim(get(gca,'YLim'))
+grid on; grid minor;
+end
 
 
+function [opti,wmpm,uwb2] = syncOptiUwbWmpm(opti,wmpm,uwb,sync)
+opti.coord = cutFromBeginOfStruct(opti,sync(2));
+[uwb2.coord, cutIdx] = cutUWBbasedOnOptitrackTiming(100,sync(2), ...
+    uwb.TimestampsUWBalignedWithOptitrack,uwb.coordinatesUWBlarsson);
+wmpm.coord = cutFromBeginOfStruct(wmpm.coordinates,sync(1));
+
+opti.time = getTimeVector(100,opti.coord.x);
+wmpm.time  = getTimeVector(100,wmpm.coord.x);
+timeVectorUWB = uwb.TimestampsUWBalignedWithOptitrack(cutIdx:end)-uwb.TimestampsUWBalignedWithOptitrack(cutIdx);
+uwb2.time = timeVectorUWB/1000;
 end
 
 
@@ -181,4 +197,30 @@ end
 if isfield(sSignal,'z')
     out.z = sSignal.y(beginCutPoint:end);
 end
+end
+
+
+function [cutData,cutIdx] = cutUWBbasedOnOptitrackTiming(fsOpti,syncOpti,uwbTime,uwbCoordinates)
+timeOpti = 1000/fsOpti * syncOpti;
+findSmallestTimeDifference = abs(uwbTime-timeOpti);
+[~,minIndex] = min(findSmallestTimeDifference);
+cutData = cutFromBeginOfStruct(makeXYZstruct(uwbCoordinates),minIndex);
+cutIdx = minIndex;
+end
+
+function sxyz = makeXYZstruct(matrix)
+[r,c] = size(matrix);
+if not(r==3 || c==3)
+    error([newline mfilename ': ' newline ...
+        blanks(30) ': LOOK HERE' newline ...
+        blanks(30) 'Not a matrix with dimension of 3' newline]);
+end
+if c > r
+    mat = matrix';
+else
+    mat = matrix;
+end
+sxyz.x = mat(:,1);
+sxyz.y = mat(:,2);
+sxyz.z = mat(:,3);
 end

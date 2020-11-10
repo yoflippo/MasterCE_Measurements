@@ -1,4 +1,4 @@
-function [coordinatesUWBlarsson] = trilaterateLarssonWMPM(optitrack,uwb)
+function [sUWB] = applyLarssonToUWBwithOptitrack(optitrack,uwb)
 %% It is assumed that the optitrack inputparameter is a struct containing
 % the previously analysed ANCHOR data and positions expressed in the
 % optitrack coordinate system.
@@ -23,6 +23,7 @@ data.AnchorPositions = (cell2mat(optitrack.Anchors.UWB_Antenna')*10)';
 sUWB = convertPozyxDataToWorkableForm(optitrack,uwbdata);
 data.Distances = sUWB.DistancesUWB;
 coordinatesUWBlarsson = executeTrilaterationsLarsson(data);
+sUWB.coordinatesUWBlarsson = coordinatesUWBlarsson;
 rmpath(genpath(ap.larsson));
 end
 
