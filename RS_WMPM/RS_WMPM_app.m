@@ -1,6 +1,5 @@
 % Analysis for WMPM app data (V23+) with acc and gyro data
-function [RotVelocity,relativeCoordinates] = ...
-    RS_WMPM_app(apCsvFileRS, blPlotVal)
+function [Gyroscope,relativeCoordinates] = RS_WMPM_app(apCsvFileRS, blPlotVal)
 
 if not(exist(apCsvFileRS,'file'))
     error([newline mfilename ': ' newline 'CSV file does not exist!' newline]);
@@ -41,26 +40,25 @@ if (max(wheelTimeRaw)-max(frameTimeRaw)) > 1
     error([newline mfilename mfilename ': ' newline blanks(30) ': LOOK HERE, time difference between wheel and frame is too large' newline]);
 end
 
-vecTime = 0:1/fs:max(frameTimeRaw)-0.5; %0.5 to avoid issues due to different signal lengths
-RotVelocity.frame = interp1(frameTimeRaw,frameGyroRaw,vecTime)';
-RotVelocity.wheel = -interp1(wheelTimeRaw,wheelGyroRaw,vecTime)'; % mind the minus sign!
+vecTime = 0:1/fs:max(frameTimeRaw);
+Gyroscope.frame = interp1(frameTimeRaw,frameGyroRaw,vecTime)';
+Gyroscope.wheel = -interp1(wheelTimeRaw,wheelGyroRaw,vecTime)'; % mind the minus sign!
 
-% Calculate speed based on wheel rotation
-whRoSpeedTotCorrected = RotVelocity.wheel-tand(wcspec.camberAngle).*RotVelocity.frame*cosd(wcspec.camberAngle);
-whSpeedTot = whRoSpeedTotCorrected*wcspec.wheelCirDeg;
-whSpeedTot = makeNaNZero(whSpeedTot);
-RotVelocity.frame = makeNaNZero(RotVelocity.frame);
-RotVelocity.wheel = makeNaNZero(RotVelocity.wheel);
+wheelRotVelCorrected = Gyroscope.wheel-Gyroscope.frame*sind(wcspec.camberAngle);
+wheelVelocityTotal = wheelRotVelCorrected*wcspec.wheelCircumferencePerDegree;
+wheelVelocityTotal = makeNaNZero(wheelVelocityTotal);
+Gyroscope.frame = makeNaNZero(Gyroscope.frame);
+Gyroscope.wheel = makeNaNZero(Gyroscope.wheel);
 
-frameCentreVelocity = whSpeedTot - (tand(RotVelocity.frame/fs)*wcspec.wheelBase/2)*fs; %%% MIND the change in sign!
+frameCentreVelocity = wheelVelocityTotal - (tand(Gyroscope.frame/fs)*wcspec.wheelBase/2) * fs; %%% MIND the change in sign!
 frameCentreVelocity = makeNaNZero(frameCentreVelocity);
-frDispl = cumtrapz(frameCentreVelocity)/fs;
+frameDisplacement = cumtrapz(frameCentreVelocity)/fs;
 
-relativeCoordinates.x = cumtrapz(diff([0;frDispl]).*sind((cumtrapz(RotVelocity.frame)/fs)));
-relativeCoordinates.y = cumtrapz(diff([0;frDispl]).*cosd((cumtrapz(RotVelocity.frame)/fs)));
+relativeCoordinates.x = 1000*cumtrapz(diff([0;frameDisplacement]).*sind((cumtrapz(Gyroscope.frame)/fs)));
+relativeCoordinates.y = 1000*cumtrapz(diff([0;frameDisplacement]).*cosd((cumtrapz(Gyroscope.frame)/fs)));
 
 if blPlotVal
-    plotWheelFrameROTATIONALspeeds(RotVelocity.frame,RotVelocity.wheel);
+    plotWheelFrameROTATIONALspeeds(Gyroscope.frame,Gyroscope.wheel);
     figure('units','normalized','outerposition',[0.1 0.1 0.8 0.8]);
     plot(relativeCoordinates.x,relativeCoordinates.y)
     axis equal
@@ -103,11 +101,11 @@ dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType',...
 fclose(fileID);
 end
 
-function wcspec = getDefaultWheelChairsSpecs()
-wcspec.wheelDiameter = 0.584;
-wcspec.wheelBase = 0.52;
-wcspec.camberAngle = 2;
-wcspec.wheelCirDeg = wcspec.wheelDiameter*pi/360;
+function w = getDefaultWheelChairsSpecs()
+w.wheelDiameter = 0.584;
+w.wheelBase = 0.52;
+w.camberAngle = 2;
+w.wheelCircumferencePerDegree = w.wheelDiameter*pi/360;
 end
 
 function [name,serial,timestamp,acc,gyro] = separateDataInVariables(dataArray)

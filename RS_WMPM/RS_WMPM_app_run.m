@@ -42,7 +42,7 @@ for nF = 1:length(files.wmpm)
         [coordOpti, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
         sUWB = applyLarssonToUWBwithOptitrack(sOptitrack,files.uwb(nF));
         [opti,wmpm,uwb] = syncOptiUwbWmpm(coordOpti,WMPM,sUWB,syncPoints(nF,:));
-%         checkSynchronisationCoarse(opti,wmpm,uwb);
+        checkSynchronisationCoarse(opti,wmpm,uwb);
         saveSyncedDataToMATfile(opti,wmpm,uwb,replace(currOPTI.name,'_optitrack',''));
     catch err
         error([files.wmpm(nF).fullpath newline err.message]);
