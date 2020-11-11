@@ -22,7 +22,7 @@ cleanOutputDir(ap.OUTPUT);
 txtfiles = getMeasurementFilesInTxtFormatOfVinay(ap);
 
 for nF = 1:length(txtfiles)
-    result = runSolversOnSingleFile(txtfiles(nF).fullPath);
+    result = runSolversOnSingleFile(txtfiles(nF).fullpath);
     result.file = txtfiles(nF);
     walkingLines = getLinesOfVinay();
     plotToCompareDecawaveWithMurphy(result,walkingLines,ap)

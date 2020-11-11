@@ -29,7 +29,7 @@ for nF = 1:length(matfiles)
     if not(isempty(apMatFiles))
         apCurrentFile = apMatFiles(nF);
         nmImage = replace(apCurrentFile.name,'.mat','.png');
-        load(apCurrentFile.fullPath);
+        load(apCurrentFile.fullpath);
         matresults(nF) = result;
      
         if nF < 10
@@ -107,10 +107,10 @@ end
 
 function apOutTable = makeOneFinalTable(matresults)
 [data,input.tableRowLabels] = getMatrixFromResults(matresults);
-
+trilaterationTypes = {'Decawave','Murphy','Larsson'};
 input.data = data;
 input.tablePositioning = 'H';
-input.tableColLabels = {'Decawave','Murphy','Larsson'};
+input.tableColLabels = trilaterationTypes;
 input.dataFormat = {'%.3f',3}; % three digits precision for first two columns, one digit for the last
 input.dataNanString = '-';
 input.tableColumnAlignment = 'l';
@@ -120,16 +120,35 @@ input.tableLabel = 'MyTableLabel';
 input.makeCompleteLatexDocument = 0;
 summary = latexTable(input);
 
-[R,P]= corrcoef(input.data(:,2), input.data(:,3), 'alpha', 0.001);
-correlation = min(min(R));
-pvalue = min(min(P));
+% [R,P]= corrcoef(input.data(:,2), input.data(:,3), 'alpha', 0.001);
+% correlation = min(min(R));
+% pvalue = min(min(P));
+% input = rmfield(input,'tableRowLabels');
+% input.tableColLabels = {'Correlation','p-value'};
+% input.data = [correlation pvalue];
+% input.dataFormat = {'%.6f',2};
+% input.tableCaption = 'Pearson correlation Murphy/Larsson, alpha = 0.001';
+% input.tableLabel = 'table:stats';
+% similarity = latexTable(input);
+
+[Corr,Pval]= corrcoef(data, 'alpha', 0.001);
 input = rmfield(input,'tableRowLabels');
-input.tableColLabels = {'Correlation','p-value'};
-input.data = [correlation pvalue];
-input.dataFormat = {'%.6f',2};
-input.tableCaption = 'Pearson correlation Murphy/Larsson, alpha = 0.001';
+input.tableColLabels = trilaterationTypes;
+input.data = Corr;
+input.dataFormat = {'%.6f'};
+input.tableCaption = ['Correlation between ' trilaterationTypes{1} ... 
+    ', ' trilaterationTypes{2} ...
+    ', ' trilaterationTypes{3} ...
+    ', alpha = 0.001'];
 input.tableLabel = 'table:stats';
-similarity = latexTable(input);
+correlationLatex = latexTable(input);
+
+input.data = Pval;
+input.tableCaption = ['pvalues of correlation between ' trilaterationTypes{1} ... 
+    ', ' trilaterationTypes{2} ...
+    ', ' trilaterationTypes{3} ...
+    ', alpha = 0.001'];
+pvaluesLatex = latexTable(input);
 
 means = mean(data);
 stds = std(data);
@@ -147,7 +166,8 @@ stats = latexTable(input);
 
 combined = [summary; newline; '\vspace{2em}'; newline; ...
     stats; newline; '\vspace{2em}'; newline; ...
-    similarity];
+       correlationLatex; newline; '\vspace{2em}'; newline; ...
+    pvaluesLatex];
 
 apOutTable = saveFinalTableInTex(combined);
 end
