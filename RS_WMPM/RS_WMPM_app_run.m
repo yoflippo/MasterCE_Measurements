@@ -1,6 +1,6 @@
 close all; clearvars; clc;
 [ap,nm,files,syncPoints] = init();
-iterateOverFiles(files,syncPoints,ap)
+iterateOverFiles(files,syncPoints)
 
 
 
@@ -31,7 +31,7 @@ end
 end
 
 
-function iterateOverFiles(files,syncPoints,ap)
+function iterateOverFiles(files,syncPoints)
 for nF = 1:length(files.wmpm)
     currWMPM = files.wmpm(nF);
     currOPTI = files.opti(nF);
@@ -42,7 +42,7 @@ for nF = 1:length(files.wmpm)
         [coordOpti, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
         sUWB = applyLarssonToUWBwithOptitrack(sOptitrack,files.uwb(nF));
         [opti,wmpm,uwb] = syncOptiUwbWmpm(coordOpti,WMPM,sUWB,syncPoints(nF,:));
-        checkSynchronisationCoarse(opti,wmpm,uwb);
+%         checkSynchronisationCoarse(opti,wmpm,uwb);
         saveSyncedDataToMATfile(opti,wmpm,uwb,replace(currOPTI.name,'_optitrack',''));
     catch err
         error([files.wmpm(nF).fullpath newline err.message]);

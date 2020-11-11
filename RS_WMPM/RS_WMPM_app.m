@@ -42,7 +42,7 @@ end
 
 vecTime = 0:1/fs:max(frameTimeRaw);
 Gyroscope.frame = interp1(frameTimeRaw,frameGyroRaw,vecTime)';
-Gyroscope.wheel = -interp1(wheelTimeRaw,wheelGyroRaw,vecTime)'; % mind the minus sign!
+Gyroscope.wheel = -interp1(wheelTimeRaw,wheelGyroRaw,vecTime)';  %%% MIND the change in sign!
 
 wheelRotVelCorrected = Gyroscope.wheel-Gyroscope.frame*sind(wcspec.camberAngle);
 wheelVelocityTotal = wheelRotVelCorrected*wcspec.wheelCircumferencePerDegree;
@@ -54,8 +54,8 @@ frameCentreVelocity = wheelVelocityTotal - (tand(Gyroscope.frame/fs)*wcspec.whee
 frameCentreVelocity = makeNaNZero(frameCentreVelocity);
 frameDisplacement = cumtrapz(frameCentreVelocity)/fs;
 
-relativeCoordinates.x = 1000*cumtrapz(diff([0;frameDisplacement]).*sind((cumtrapz(Gyroscope.frame)/fs)));
-relativeCoordinates.y = 1000*cumtrapz(diff([0;frameDisplacement]).*cosd((cumtrapz(Gyroscope.frame)/fs)));
+relativeCoordinates.x = -1000*cumtrapz(diff([0;frameDisplacement]).*sind((cumtrapz(Gyroscope.frame)/fs)));  %%% MIND the change in sign!
+relativeCoordinates.y = -1000*cumtrapz(diff([0;frameDisplacement]).*cosd((cumtrapz(Gyroscope.frame)/fs)));  %%% MIND the change in sign!
 
 if blPlotVal
     plotWheelFrameROTATIONALspeeds(Gyroscope.frame,Gyroscope.wheel);
