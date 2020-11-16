@@ -195,7 +195,7 @@ if isfield(sSignal,'y')
     out.y = sSignal.y(beginCutPoint:end);
 end
 if isfield(sSignal,'z')
-    out.z = sSignal.y(beginCutPoint:end);
+    out.z = sSignal.z(beginCutPoint:end);
 end
 end
 
