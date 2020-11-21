@@ -9,11 +9,17 @@ uwb3 = improveUWB(uwb2);
 sumCorrelation(uwb3,opti2);
 
 matOpti = makeMatrixFromStruct(opti2);
-matUwb = makeMatrixFromStruct(uwb3);
-plot3duwbopti(matUwb)
+matUwb3 = makeMatrixFromStruct(uwb3);
+matUwb2 = makeMatrixFromStruct(uwb2);
+
+getNtimesStdOfDifference(6,matOpti,matUwb3)
+
+plot3duwbopti(matUwb3,matUwb2)
 plot3duwbopti(matOpti)
 distFig
 end
+
+
 
 function sumCorrelation(uwb,opti)
 [Corrx,Pvalx]= corrcoef([uwb.x opti.x]);
@@ -29,7 +35,7 @@ function [uwbsl, optisl] = makeSameLength(uwb,opti)
 maxTimeUwb = uwb.time(end);
 maxTimeOpti = opti.time(end);
 maxTimeRound = round(min(maxTimeUwb,maxTimeOpti));
-vecTime = 0:1/5:max(maxTimeRound);
+vecTime = 0:1/10:max(maxTimeRound);
 
 uwbsl.x = interp1(uwb.time,uwb.coord.x,vecTime)';
 uwbsl.y = interp1(uwb.time,uwb.coord.y,vecTime)';
@@ -44,11 +50,13 @@ optisl = makeNaNZeroStruct(optisl);
 
 end
 
+
 function str = makeNaNZeroStruct(str)
 str.x = makeNaNZero(str.x);
 str.y = makeNaNZero(str.y);
 str.z = makeNaNZero(str.z);
 end
+
 
 function input = makeNaNZero(input)
 input(isnan(input)) = 0;
@@ -59,23 +67,34 @@ function matrix = makeMatrixFromStruct(str)
 matrix = [str.x str.y str.z];
 end
 
+
 function uwb = improveUWB(uwb)
 uwb.x = filteruwb(uwb.x);
 uwb.y = filteruwb(uwb.y);
 uwb.z = filteruwb(uwb.z);
 
     function vector = filteruwb(vector)
-        vector = smooth(smooth(vector,10),'sgolay',3);
+%         [var.b,var.a] = butter(2,0.5/10,'low');
+%         vector = filtfilt(var.b,var.a,vector);
+        vector = smooth(vector,10);
+        vector = smooth(vector,'sgolay',2);
     end
 end
 
-function plot3duwbopti(datTag)
+
+function plot3duwbopti(datTag,datTag2)
 figure;
 subplot(221);
 
+if not(exist('datTag2','var'))
+    plot3(datTag(:,1),datTag(:,2),datTag(:,3),'g','LineWidth',2);
+else
+    plot3(datTag(:,1),datTag(:,2),datTag(:,3),'g','LineWidth',2);
+    hold on;
+    plot3(datTag2(:,1),datTag2(:,2),datTag2(:,3),'r','LineWidth',1.5);
+end
 hold on; grid on; grid minor;
-plot3(datTag(:,1),datTag(:,2),datTag(:,3),'g','LineWidth',2);
-xlabel('x');ylabel('y');zlabel('z');
+xlabel('x');ylabel('y');zlabel('z'); axis equal
 
 subplot(222);
 nicifyPlot(datTag(:,1),'X-coordinates','x','r');
@@ -85,6 +104,7 @@ subplot(224);
 nicifyPlot(datTag(:,3),'Z-coordinates','z','b');
 end
 
+
 function nicifyPlot(data,name,label,color)
 plot(data,color);
 title(name);
@@ -92,4 +112,9 @@ ylabel(label);
 xlabel('Time');
 grid on; grid minor;
 hold on;
+end
+
+
+function s = getNtimesStdOfDifference(N,data1,data2)
+s = N*std(data1(:,1:2)-data2(:,1:2),0,'all');
 end
