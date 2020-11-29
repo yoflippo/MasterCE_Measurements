@@ -43,7 +43,7 @@ for nF = 1:length(files.wmpm)
         sUWB = applyLarssonToUWBwithOptitrack(sOptitrack,files.uwb(nF));
         [opti,wmpm,uwb] = syncOptiUwbWmpm(coordOpti,WMPM,sUWB,syncPoints(nF,:));
 %         checkSynchronisationCoarse(opti,wmpm,uwb);
-        saveSyncedDataToMATfile(opti,wmpm,uwb,replace(currOPTI.name,'_optitrack',''));
+        saveSyncedDataToMATfile(opti,wmpm,uwb,replace(currOPTI.name,'_optitrack',''),sOptitrack);
     catch err
         error([files.wmpm(nF).fullpath newline err.message]);
     end
@@ -225,7 +225,7 @@ sxyz.y = mat(:,2);
 sxyz.z = mat(:,3);
 end
 
-function saveSyncedDataToMATfile(opti,wmpm,uwb,matfile)
+function saveSyncedDataToMATfile(opti,wmpm,uwb,matfile,sOpti)
 mkdirIf('synced');
 cd('synced');
 save(matfile);

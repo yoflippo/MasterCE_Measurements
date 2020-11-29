@@ -12,6 +12,7 @@ matOpti = makeMatrixFromStruct(opti2);
 matUwb3 = makeMatrixFromStruct(uwb3);
 matUwb2 = makeMatrixFromStruct(uwb2);
 
+ getErrorProfile(matUwb2,matOpti)
 getNtimesStdOfDifference(6,matOpti,matUwb3)
 
 plot3duwbopti(matUwb3,matUwb2)
@@ -117,4 +118,14 @@ end
 
 function s = getNtimesStdOfDifference(N,data1,data2)
 s = N*std(data1(:,1:2)-data2(:,1:2),0,'all');
+end
+
+
+function s = getErrorProfile(data1,data2)
+differenceOri = data1(:,1:2)-data2(:,1:2);
+difference = differenceOri(:);
+mindiff = min(difference);
+maxdiff = max(difference);
+figure; histogram(differenceOri(:,1)); title('x-axis');
+figure; histogram(differenceOri(:,2)); title('y-axis');
 end
