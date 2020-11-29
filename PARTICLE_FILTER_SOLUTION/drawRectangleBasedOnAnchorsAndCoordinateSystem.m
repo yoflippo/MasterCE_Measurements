@@ -1,6 +1,6 @@
 function [court,hfig] = drawRectangleBasedOnAnchorsAndCoordinateSystem(OptiAnchorInfo)
 hfig = figure;
-anchorCoordinates = cell2mat(OptiAnchorInfo.UWB_Antenna');
+anchorCoordinates = cell2mat(OptiAnchorInfo.UWB_Antenna')*10; %to mm
 court.minx = min(anchorCoordinates(:,1));
 court.maxx = max(anchorCoordinates(:,1));
 court.miny = min(anchorCoordinates(:,2));
@@ -9,7 +9,8 @@ court.lines(1) = courtLine([court.minx court.minx],[court.miny, court.maxy]);
 court.lines(2) = courtLine([court.minx court.maxx],[court.maxy, court.maxy]);
 court.lines(3) = courtLine([court.maxx court.maxx],[court.maxy, court.miny]);
 court.lines(4) = courtLine([court.maxx court.minx],[court.miny, court.miny]);
-grid on; grid minor; title('Court');
+grid on; grid minor; title('Court'); axis('equal');
+xlabel('x-coordinates'); ylabel('y-coordinates');
 drawAnchors(anchorCoordinates)
 end
 
