@@ -6,6 +6,7 @@ vecTime = 0:1/samplefrequency:max(maxTimeRound);
 uwbsl = makeRightLength(uwb.time,uwb.coord,vecTime);
 optisl = makeRightLength(opti.time,opti.coord,vecTime);
 wmpmsl = makeRightLength(wmpm.time,wmpm.coord,vecTime);
+wmpmsl.vel = interp1(wmpm.time,wmpm.velframe,vecTime)';
 end
 
 function var = makeRightLength(varTime,varCoord,time)

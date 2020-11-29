@@ -176,12 +176,15 @@ end
 
 function [opti,wmpm,uwb2] = syncOptiUwbWmpm(opti,wmpm,uwb,sync)
 opti.coord = cutFromBeginOfStruct(opti,sync(2));
+opti.time = getTimeVector(100,opti.coord.x);
+
 [uwb2.coord, cutIdx] = cutUWBbasedOnOptitrackTiming(100,sync(2), ...
     uwb.TimestampsUWBalignedWithOptitrack,uwb.coordinatesUWBlarsson);
-wmpm.coord = cutFromBeginOfStruct(wmpm.coordinates,sync(1));
 
-opti.time = getTimeVector(100,opti.coord.x);
+wmpm.coord = cutFromBeginOfStruct(wmpm.coordinates,sync(1));
+wmpm.velframe = wmpm.rotationvelocity.frame(sync(1):end);
 wmpm.time  = getTimeVector(100,wmpm.coord.x);
+
 timeVectorUWB = uwb.TimestampsUWBalignedWithOptitrack(cutIdx:end)-uwb.TimestampsUWBalignedWithOptitrack(cutIdx);
 uwb2.time = timeVectorUWB/1000;
 end
