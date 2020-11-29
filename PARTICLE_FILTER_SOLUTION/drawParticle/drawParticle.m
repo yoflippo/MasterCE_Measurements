@@ -1,15 +1,15 @@
-function drawParticle(x,y,direction,color)
+function h = drawParticle(x,y,direction,color)
 csize = 5;
 linewidth = 2;
 
-hc = drawCircle(x,y,csize);
-set(hc,'Color',color);
-set(hc,'LineWidth',linewidth);
+h(1) = drawCircle(x,y,csize);
+set(h(1),'Color',color);
+set(h(1),'LineWidth',linewidth);
 
 hold on;
 y1 = y + 3 * csize * sind(direction);
 x1 = x + 3 * csize * cosd(direction);
-plot([x x1],[y y1],'Color',color,'LineWidth',linewidth);
+h(2) = plot([x x1],[y y1],'Color',color,'LineWidth',linewidth);
 end
 
 function h = drawCircle(x,y,radius)

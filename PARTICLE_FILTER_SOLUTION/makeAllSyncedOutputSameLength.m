@@ -1,6 +1,6 @@
-function [uwbsl, optisl, wmpmsl] = makeAllSyncedOutputSameLength(uwb,opti,wmpm)
+function [uwbsl, optisl, wmpmsl] = makeAllSyncedOutputSameLength(uwb,opti,wmpm,fs)
 maxTimeRound = round(min([uwb.time(end) opti.time(end) wmpm.time(end)]));
-samplefrequency = 10;
+samplefrequency = fs;
 vecTime = 0:1/samplefrequency:max(maxTimeRound);
 
 uwbsl = makeRightLength(uwb.time,uwb.coord,vecTime);

@@ -38,7 +38,7 @@ for nF = 1:length(files.wmpm)
     try
         currWMPM.folder
         close all;
-        [WMPM.rotationvelocity,WMPM.coordinates] = RS_WMPM_app(currWMPM.fullpath);
+        [WMPM.rotationvelocity,WMPM.coordinates,WMPM.framevel] = RS_WMPM_app(currWMPM.fullpath);
         [coordOpti, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
         sUWB = applyLarssonToUWBwithOptitrack(sOptitrack,files.uwb(nF));
         [opti,wmpm,uwb] = syncOptiUwbWmpm(coordOpti,WMPM,sUWB,syncPoints(nF,:));
@@ -182,7 +182,7 @@ opti.time = getTimeVector(100,opti.coord.x);
     uwb.TimestampsUWBalignedWithOptitrack,uwb.coordinatesUWBlarsson);
 
 wmpm.coord = cutFromBeginOfStruct(wmpm.coordinates,sync(1));
-wmpm.velframe = wmpm.rotationvelocity.frame(sync(1):end);
+wmpm.velframe = wmpm.framevel(sync(1):end);
 wmpm.time  = getTimeVector(100,wmpm.coord.x);
 
 timeVectorUWB = uwb.TimestampsUWBalignedWithOptitrack(cutIdx:end)-uwb.TimestampsUWBalignedWithOptitrack(cutIdx);

@@ -1,5 +1,5 @@
 % Analysis for WMPM app data (V23+) with acc and gyro data
-function [Gyroscope,relativeCoordinates] = RS_WMPM_app(apCsvFileRS, blPlotVal)
+function [Gyroscope,relativeCoordinates,frameCentreVelocity] = RS_WMPM_app(apCsvFileRS, blPlotVal)
 
 if not(exist(apCsvFileRS,'file'))
     error([newline mfilename ': ' newline 'CSV file does not exist!' newline]);

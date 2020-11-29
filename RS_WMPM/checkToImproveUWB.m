@@ -12,8 +12,8 @@ matOpti = makeMatrixFromStruct(opti2);
 matUwb3 = makeMatrixFromStruct(uwb3);
 matUwb2 = makeMatrixFromStruct(uwb2);
 
- getErrorProfile(matUwb2,matOpti)
-getNtimesStdOfDifference(6,matOpti,matUwb3)
+getErrorProfile(matUwb2,matOpti)
+getNtimesStdOfDifference(5,matOpti,matUwb3)
 
 plot3duwbopti(matUwb3,matUwb2)
 plot3duwbopti(matOpti)
@@ -36,7 +36,7 @@ function [uwbsl, optisl] = makeSameLength(uwb,opti)
 maxTimeUwb = uwb.time(end);
 maxTimeOpti = opti.time(end);
 maxTimeRound = round(min(maxTimeUwb,maxTimeOpti));
-vecTime = 0:1/10:max(maxTimeRound);
+vecTime = 0:1/20:max(maxTimeRound);
 
 uwbsl.x = interp1(uwb.time,uwb.coord.x,vecTime)';
 uwbsl.y = interp1(uwb.time,uwb.coord.y,vecTime)';
@@ -75,8 +75,8 @@ uwb.y = filteruwb(uwb.y);
 uwb.z = filteruwb(uwb.z);
 
     function vector = filteruwb(vector)
-%         [var.b,var.a] = butter(2,0.5/10,'low');
-%         vector = filtfilt(var.b,var.a,vector);
+        %         [var.b,var.a] = butter(2,0.5/10,'low');
+        %         vector = filtfilt(var.b,var.a,vector);
         vector = smooth(vector,10);
         vector = smooth(vector,'sgolay',2);
     end
