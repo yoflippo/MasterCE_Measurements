@@ -1,5 +1,4 @@
-function [court,hfig] = drawRectangleBasedOnAnchorsAndCoordinateSystem(OptiAnchorInfo)
-hfig = figure;
+function [court] = drawRectangleBasedOnAnchorsAndCoordinateSystem(OptiAnchorInfo)
 anchorCoordinates = cell2mat(OptiAnchorInfo.UWB_Antenna')*10; %to mm
 court.minx = min(anchorCoordinates(:,1));
 court.maxx = max(anchorCoordinates(:,1));

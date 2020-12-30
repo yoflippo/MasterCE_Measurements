@@ -10,37 +10,54 @@ addpath(genpath(ap.synced));
 files = makeFullPathFromDirOutput(dir([ap.synced filesep '*.mat']));
 
 m1 = load(files(1).fullpath);
-samplefrequency = 10;
+samplefrequency = 100;
 numberOfParticles = 700;
-circleRadius = 350;
-[court,hfig] = drawRectangleBasedOnAnchorsAndCoordinateSystem(m1.sOpti.Anchors);
+circleRadius = 300;
+
+hfig = figure('units','normalized','outerposition',[0.5 0 0.5 1]);
+set(hfig,'doublebuffer','off');
+
+court = drawRectangleBasedOnAnchorsAndCoordinateSystem(m1.sOpti.Anchors);
 [uwb,opti,wmpm] = makeAllSyncedOutputSameLength(m1.uwb,m1.opti,m1.wmpm,samplefrequency);
+
+set(gca, 'xlimmode','manual',...
+    'ylimmode','manual',...
+    'zlimmode','manual',...
+    'climmode','manual',...
+    'alimmode','manual');
 
 uwb = improveUWB(uwb);
 plotSystems(hfig,uwb,opti,wmpm);
 hold on;
 
-[area, hdc] = drawCircle(uwb.x(1),uwb.y(1),500);
+startValue = 5600;
+[area, hdc] = drawCircle(uwb.x(startValue),uwb.y(startValue),circleRadius);
+particles = drawParticlesInsideCircle(numberOfParticles,uwb.x(startValue),uwb.y(startValue),circleRadius);
+removeDrawnParticles(particles);
 
-particles = drawParticlesInsideCircle(numberOfParticles,uwb.x(1),uwb.y(1),circleRadius);
-for nS = 250:length(uwb.x)
-    delete(hdc(1)); delete(hdc(2));
-    distance = 1000*wmpm.vel(nS)/samplefrequency;
-    particles = moveParticles(particles,distance);
+hd = drawDot(opti.x(startValue),opti.y(startValue),'green');
+hd_wmpm = drawDot(wmpm.x(startValue),wmpm.y(startValue),'green');
+ylim([-2700 1800]); xlim([-2700 1100]);
+
+for nS = startValue:length(uwb.x)
+    delete(hdc(1)); delete(hdc(2)); delete(hdc);     delete(hd_wmpm);
     
-    [area, hdc] = drawCircle(uwb.x(nS),uwb.y(nS),circleRadius);
-    
-    particles1 = removeParticlesOutsideArea(particles,area);
-    
-    particles = replenishParticles(particles1,numberOfParticles,area,distance);
-    particlesChanged = drawParticles(particles,'green');
-    particlesOld = drawParticles(particles1,'blue');
-    pause(0.05);
-    removeDrawnParticles(particlesChanged);
+    [particles,distance,orientation] = moveParticles(particles,nS,wmpm,samplefrequency);
+    [area,hdc] = drawCircle(uwb.x(nS),uwb.y(nS),circleRadius);
+    drawDot(uwb.x(nS),uwb.y(nS),'blue');
+    drawDot(mean([particles.x]),mean([particles.y]),'magenta');
+    drawDot(opti.x(nS),opti.y(nS),'green');
+    hd_wmpm = drawDot(wmpm.x(nS),wmpm.y(nS),'green');
+    particles = removeParticlesOutsideArea(particles,area);
+    particles = replenishAndRenewParticles(particles,numberOfParticles,area,distance);
+
+    particlesOld = drawParticles(particles,'blue');
+    drawnow;
     removeDrawnParticles(particlesOld);
-    removeDrawnParticles(particles);
 end
 end
+
+
 
 
 
@@ -71,8 +88,8 @@ function uwb = improveUWB(uwb)
 uwb.x = filteruwb(uwb.x);
 uwb.y = filteruwb(uwb.y);
     function vector = filteruwb(vector)
-        vector = smooth(vector,10);
-        vector = smooth(vector,'sgolay',4);
+        vector = smooth(vector,80);
+        %         vector = smooth(vector,'sgolay',2);
     end
 end
 
@@ -83,21 +100,28 @@ c.ycor = radius * sin(p) + y;
 
 h(1) = plot(c.xcor,c.ycor,'LineWidth',1,'Color','black');
 hold on;
-h(2) = plot(x,y,'Marker','o','MarkerSize',10,'LineWidth',5);
+h(2) = plot(x,y,'Marker','.','MarkerSize',15,'LineWidth',5,'Color','red');
 
 c.origin.x = x;
 c.origin.y = y;
 c.radius = radius;
 end
 
+function [h] = drawDot(x,y,color)
+if not(exist('color','var'))
+    color = 'black';
+end
+h = plot(x,y,'Marker','.','MarkerSize',10,'LineWidth',5,'Color',color);
+end
+
 
 function plotSystems(hfig, uwb,opti,wmpm)
-cmapgray = 0.5*ones(1,3);
-cmapuwb = [1 0 0];
-cmapwmpm = [0 0 1];
-cmapopti = [1 1 1];
+grayf = 0.8;
+cmapuwb = grayf*[1 0 0];
+cmapwmpm = grayf*[0 0 1];
+cmapopti = grayf*[1 1 1];
 
-% plotCoordinatesOfSystem(hfig,uwb,cmapgray.*cmapuwb)
-plotCoordinatesOfSystem(hfig,opti,cmapgray.*cmapopti);
-% plotCoordinatesOfSystem(hfig,wmpm,cmapgray.*cmapwmpm)
+plotCoordinatesOfSystem(hfig,uwb,cmapuwb)
+plotCoordinatesOfSystem(hfig,opti,cmapopti);
+plotCoordinatesOfSystem(hfig,wmpm,cmapwmpm)
 end

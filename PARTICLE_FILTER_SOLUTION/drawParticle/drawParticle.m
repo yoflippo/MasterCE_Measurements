@@ -2,9 +2,9 @@ function h = drawParticle(x,y,direction,color)
 csize = 5;
 linewidth = 2;
 
-h(1) = drawCircle(x,y,csize);
-set(h(1),'Color',color);
-set(h(1),'LineWidth',linewidth);
+% h(1) = drawCircle(x,y,csize);
+% set(h(1),'Color',color);
+% set(h(1),'LineWidth',linewidth);
 
 hold on;
 y1 = y + 3 * csize * sind(direction);
