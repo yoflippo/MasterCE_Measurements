@@ -27,10 +27,10 @@ function plotTheSystems(opti,uwb,wmpm)
 figure('units','normalized','outerposition',[0.1 0.1 0.9 0.9]);
 
 subplot(2,2,1);
-plot(opti.coord.x, opti.coord.y); 
+plot(opti.coord.x, opti.coord.y,'g'); 
 plotMarkerStartAndfinish(opti)
 xlabel('x-coordinates'); ylabel('y-coordinates');
-title('Coordinates form Optitrack');
+title('Optitrack coordinates');
 axis equal
 xlimvals = get(gca,'XLim');
 ylimvals = get(gca,'YLim');
@@ -39,30 +39,31 @@ grid on; grid minor;
 offsetWMPM = getOffsetToMakeWMPMStartAtUWBlocation(uwb,wmpm);
 
 subplot(2,2,2);
-plot(wmpm.coord.x,wmpm.coord.y);
+plot(wmpm.coord.x,wmpm.coord.y,'b');
 hold on;
-plot(wmpm.coord.x - offsetWMPM(1),wmpm.coord.y - offsetWMPM(2),'r');
+% plot(wmpm.coord.x - offsetWMPM(1),wmpm.coord.y - offsetWMPM(2),'r');
 plotMarkerStartAndfinish(wmpm)
 xlabel('x-coordinates'); ylabel('y-coordinates');
-title('Coordinates from gyroscopes in wheel & base');
+title('WMPM Coordinates');
 grid on; grid minor;
 axis equal
 ylim(ylimvals); xlim(xlimvals);
 
 subplot(2,2,3);
-plot(uwb.coord.x, uwb.coord.y);
+plot(uwb.coord.x, uwb.coord.y,'r');
 plotMarkerStartAndfinish(uwb)
 xlabel('x-coordinates'); ylabel('y-coordinates'); 
-title('Coordinates from UWB');
+title('UWB Coordinates');
 grid on; grid minor;
 axis equal
 ylim(ylimvals); xlim(xlimvals);
+set(findall(0,'type','line'),'linewidth',2);
 end
 
 function plotMarkerStartAndfinish(data)
 hold on;
-plot(data.coord.x(1),data.coord.y(1),'ob','LineWidth',2,'MarkerSize',9);
-plot(data.coord.x(end),data.coord.y(end),'xr','LineWidth',2,'MarkerSize',9);
+plot(data.coord.x(1),data.coord.y(1),'ok','LineWidth',2,'MarkerSize',9);
+plot(data.coord.x(end),data.coord.y(end),'xk','LineWidth',2,'MarkerSize',9);
 end
 
 function offsetWMPM = getOffsetToMakeWMPMStartAtUWBlocation(uwb,wmpm)

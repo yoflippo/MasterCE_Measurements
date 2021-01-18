@@ -3,7 +3,6 @@ close all; clearvars; clc;
 iterateOverFiles(files,syncPoints)
 
 
-
 function [ap,nm,files,syncPoints] = init()
 [ap.thisFile, nm.CurrFile] = fileparts(mfilename('fullpath'));
 cd(ap.thisFile)

@@ -3,11 +3,12 @@ close all; clc;
 
 apThisFile = fileparts(mfilename('fullpath'));
 cd(apThisFile);
-ap.code_measurements = findSubFolderPath(pwd,'MEASUREMENTS','CODE');
+% ap.code_measurements = findSubFolderPath(pwd,'MEASUREMENTS','CODE');
+% addpath(genpath(ap.code_measurements));
 ap.measurements = findSubFolderPath(pwd,'UWB','MEASUREMENT_DATA');
 ap.simulation = findSubFolderPath(pwd,'UWB','SIMULATION');
 addpath(genpath(ap.simulation));
-addpath(genpath(ap.code_measurements));
+
 
 cd(ap.measurements);
 files = dir(['**' filesep '*_4solver.mat']);
@@ -36,7 +37,7 @@ for nF = 1:length(files)
 %         load(replace(apRawMat,'_4solver','_optitrack'));
         
         [result.pozyxpos.errloc,result.pozyxpos.errdis,r.pozyxpos.fig] = ...
-            plotTagAnchorMeasurement(data,data.pozyx.Tag);
+            plotTagAnchorMeasurement_midterm(data,data.pozyx.Tag);
         savefig(r.pozyxpos.fig,replace(apRawMat,'_4solver.mat','_pozyxpos_results.fig'));
         save(replace(apRawMat,'_4solver','_results'),'result');
         

@@ -9,13 +9,14 @@ if not(exist('blPlotVal','var'))
 end
 
 initAndAddNeededPaths();
-[name,~,timestamp,~,gyro] = readCSVdata(apCsvFileRS);
+[name,~,timestamp,acc,gyro] = readCSVdata(apCsvFileRS);
 wcspec = getDefaultWheelChairsSpecs();
 
 fs = 100;
 firstSecondsToIgnore = 1;
 isFrame = ismember(name,'Frame');
 isWheel = ismember(name,'Wheel');
+isTrunk = ismember(name,'Trunk');
 
 frameTimeRaw = timestamp(isFrame)./1000;
 frameGyroRaw = gyro.z(isFrame);
@@ -43,19 +44,19 @@ end
 vecTime = 0:1/fs:max(frameTimeRaw);
 Gyroscope.frame = interp1(frameTimeRaw,frameGyroRaw,vecTime)';
 Gyroscope.wheel = -interp1(wheelTimeRaw,wheelGyroRaw,vecTime)';  %%% MIND the change in sign!
-
-wheelRotVelCorrected = Gyroscope.wheel-Gyroscope.frame*sind(wcspec.camberAngle);
-wheelVelocityTotal = wheelRotVelCorrected*wcspec.wheelCircumferencePerDegree;
-wheelVelocityTotal = makeNaNZero(wheelVelocityTotal);
 Gyroscope.frame = makeNaNZero(Gyroscope.frame);
 Gyroscope.wheel = makeNaNZero(Gyroscope.wheel);
 
+wheelRotVelCorrected = Gyroscope.wheel-Gyroscope.frame*sind(wcspec.camberAngle);
+wheelVelocityTotal = wheelRotVelCorrected*wcspec.wheelCircumferencePerDegree;
+
 frameCentreVelocity = wheelVelocityTotal - (tand(Gyroscope.frame/fs)*wcspec.wheelBase/2) * fs; %%% MIND the change in sign!
-frameCentreVelocity = makeNaNZero(frameCentreVelocity);
 frameDisplacement = cumtrapz(frameCentreVelocity)/fs;
 
-relativeCoordinates.x = -1000*cumtrapz(diff([0;frameDisplacement]).*sind((cumtrapz(Gyroscope.frame)/fs)));  %%% MIND the change in sign!
-relativeCoordinates.y = -1000*cumtrapz(diff([0;frameDisplacement]).*cosd((cumtrapz(Gyroscope.frame)/fs)));  %%% MIND the change in sign!
+relativeCoordinates.x = -1000*cumtrapz(diff([0;frameDisplacement]).* ...
+    sind((cumtrapz(Gyroscope.frame)/fs)));  %%% MIND the change in sign!
+relativeCoordinates.y = -1000*cumtrapz(diff([0;frameDisplacement]).* ... 
+    cosd((cumtrapz(Gyroscope.frame)/fs)));  %%% MIND the change in sign!
 
 if blPlotVal
     plotWheelFrameROTATIONALspeeds(Gyroscope.frame,Gyroscope.wheel);

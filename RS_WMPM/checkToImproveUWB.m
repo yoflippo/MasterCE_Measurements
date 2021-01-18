@@ -15,11 +15,10 @@ matUwb2 = makeMatrixFromStruct(uwb2);
 getErrorProfile(matUwb2,matOpti)
 getNtimesStdOfDifference(5,matOpti,matUwb3)
 
-plot3duwbopti(matUwb3,matUwb2)
-plot3duwbopti(matOpti)
+plot3duwbopti(matUwb3,matOpti)
+plot3duwbopti(matUwb2,matOpti)
 distFig
 end
-
 
 
 function sumCorrelation(uwb,opti)
@@ -66,9 +65,6 @@ end
 
 function matrix = makeMatrixFromStruct(str)
 matrix = [str.x str.y str.z];
-end
-
-
 function uwb = improveUWB(uwb)
 uwb.x = filteruwb(uwb.x);
 uwb.y = filteruwb(uwb.y);
@@ -82,26 +78,32 @@ uwb.z = filteruwb(uwb.z);
     end
 end
 
+end
 
-function plot3duwbopti(datTag,datTag2)
+
+
+function plot3duwbopti(datTag,dataReference)
 figure;
 subplot(221);
 
-if not(exist('datTag2','var'))
+if not(exist('dataReference','var'))
     plot3(datTag(:,1),datTag(:,2),datTag(:,3),'g','LineWidth',2);
 else
     plot3(datTag(:,1),datTag(:,2),datTag(:,3),'g','LineWidth',2);
     hold on;
-    plot3(datTag2(:,1),datTag2(:,2),datTag2(:,3),'r','LineWidth',1.5);
+    plot3(dataReference(:,1),dataReference(:,2),dataReference(:,3),'r','LineWidth',1.5);
 end
 hold on; grid on; grid minor;
 xlabel('x');ylabel('y');zlabel('z'); axis equal
 
 subplot(222);
+nicifyPlot(dataReference(:,1),'X-coordinates','x','k');
 nicifyPlot(datTag(:,1),'X-coordinates','x','r');
 subplot(223);
+nicifyPlot(dataReference(:,2),'Y-coordinates','y','k');
 nicifyPlot(datTag(:,2),'Y-coordinates','y','g');
 subplot(224);
+nicifyPlot(dataReference(:,3),'Z-coordinates','z','k');
 nicifyPlot(datTag(:,3),'Z-coordinates','z','b');
 end
 
