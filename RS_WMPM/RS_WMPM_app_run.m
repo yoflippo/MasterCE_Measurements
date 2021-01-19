@@ -37,7 +37,7 @@ for nF = 1:length(files.wmpm)
     try
         currWMPM.folder
         close all;
-        [WMPM.rotationvelocity,WMPM.coordinates,WMPM.framevel] = RS_WMPM_app(currWMPM.fullpath);
+        [WMPM.rotationvelocity,WMPM.coordinates,WMPM.framevel, WMPM.acc] = RS_WMPM_app(currWMPM.fullpath);
         [coordOpti, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
         sUWB = applyLarssonToUWBwithOptitrack(sOptitrack,files.uwb(nF));
         [opti,wmpm,uwb] = syncOptiUwbWmpm(coordOpti,WMPM,sUWB,syncPoints(nF,:));

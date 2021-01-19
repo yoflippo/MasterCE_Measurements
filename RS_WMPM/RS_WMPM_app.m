@@ -1,5 +1,5 @@
 % Analysis for WMPM app data (V23+) with acc and gyro data
-function [Gyroscope,relativeCoordinates,frameCentreVelocity] = RS_WMPM_app(apCsvFileRS, blPlotVal)
+function [Gyroscope,relativeCoordinates,frameCentreVelocity,Accelero] = RS_WMPM_app(apCsvFileRS, blPlotVal)
 
 if not(exist(apCsvFileRS,'file'))
     error([newline mfilename ': ' newline 'CSV file does not exist!' newline]);
@@ -17,6 +17,12 @@ firstSecondsToIgnore = 1;
 isFrame = ismember(name,'Frame');
 isWheel = ismember(name,'Wheel');
 isTrunk = ismember(name,'Trunk');
+
+trunkTimeRaw = timestamp(isTrunk)./1000;
+trunkAcceleroRaw = sqrt(acc.x(isTrunk).^2 + acc.y(isTrunk).^2 + acc.z(isTrunk).^2);
+trunkTimeRawIdx = find(trunkTimeRaw>firstSecondsToIgnore,1);
+trunkTimeRaw(1:trunkTimeRawIdx-1) = [];
+trunkAcceleroRaw(1:trunkTimeRawIdx-1) = [];
 
 frameTimeRaw = timestamp(isFrame)./1000;
 frameGyroRaw = gyro.z(isFrame);
@@ -46,6 +52,10 @@ Gyroscope.frame = interp1(frameTimeRaw,frameGyroRaw,vecTime)';
 Gyroscope.wheel = -interp1(wheelTimeRaw,wheelGyroRaw,vecTime)';  %%% MIND the change in sign!
 Gyroscope.frame = makeNaNZero(Gyroscope.frame);
 Gyroscope.wheel = makeNaNZero(Gyroscope.wheel);
+
+vecTimeAccelero = 0:1/fs:max(trunkTimeRaw);
+Accelero.trunk.resultant = interp1(trunkTimeRaw,trunkAcceleroRaw,vecTimeAccelero)';
+Accelero.trunk.resultant = makeNaNZero(Accelero.trunk.resultant);
 
 wheelRotVelCorrected = Gyroscope.wheel-Gyroscope.frame*sind(wcspec.camberAngle);
 wheelVelocityTotal = wheelRotVelCorrected*wcspec.wheelCircumferencePerDegree;
