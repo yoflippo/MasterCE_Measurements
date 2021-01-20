@@ -1,9 +1,3 @@
-% MAKELATEXTABLESFROM_MEASUREMENT_RESULTS
-% BY: 2020  M. Schrauwen (markschrauwen@gmail.com)
-
-% $Revision: 0.0.0 $  $Date: 2020-09-16 $
-% Creation of this function.
-
 function makeLatexTablesFrom_MEASUREMENT_Results()
 close all; clc;
 
@@ -53,27 +47,7 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
     function checkoutCleanData(curr)
         %% Check if clean works out
         if mean([curr.error.dist.clean{:}]) > 1e-12
@@ -150,36 +124,10 @@ end
     end
 
 
-
-% FINDSUBFOLDERPATH
-% BY: 2020  M. Schrauwen (markschrauwen@gmail.com)
-
-% $Revision: 0.0.0 $  $Date: 2020-09-11 $
-% Creation of this function.
-
-    function [output] = findSubFolderPath(absolutePath,rootFolder,nameFolder)
-        
-        if ~contains(absolutePath,rootFolder)
-            error([newline mfilename ': ' newline 'Rootfolder not within absolutePath' newline]);
-        end
-        startDir = fullfile(extractBefore(absolutePath,rootFolder),rootFolder);
-        dirs = dir([startDir filesep '**' filesep '*']);
-        dirs(~[dirs.isdir])=[];
-        dirs(contains({dirs.name},'.'))=[];
-        dirs(~contains({dirs.name},nameFolder))=[];
-        if length(dirs)>1
-            warning([newline mfilename ': ' newline 'Multiple possible folders found' newline]);
-            output = dirs;
-        end
-        output = fullfile(dirs(1).folder,dirs(1).name);
-    end
-
-
     function [strStatic,strDynamic] = cleanAndFormatRangingData(apMAT)
         load(apMAT.CurrFullPath);
         % Remove unwanted field, by finding certain keywords
         outputTable = outputTable(:,[2 4 6:9 11]); %only distance error data
-        
         
         idx2Remove = contains(outputTable.file,'HF3');
         idx2Remove = idx2Remove | contains(outputTable.file,'90_');
@@ -238,9 +186,4 @@ end
         strDynamic.label = 'tab:meas:res:dynamic:pozyxpos';
         strStatic.label = 'tab:meas:res:static:pozyxpos';
     end
-
 end
-
-
-
-

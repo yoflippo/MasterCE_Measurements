@@ -19,7 +19,6 @@ if isfield(data,'TagPositions')
     scatter3(datTag(:,1),datTag(:,2),datTag(:,3),'g','LineWidth',2);
     if exist('results','var')
         scatter3(results(:,1),results(:,2),results(:,3),'rx','LineWidth',2);
-        
         scatter3(datTag(1,1),datTag(1,2),datTag(1,3),'ko','LineWidth',3);
         scatter3(results(1,1),results(1,2),results(1,3),'kx','LineWidth',3);
         axis equal
@@ -28,7 +27,6 @@ if isfield(data,'TagPositions')
     errvalloc = getErrorLocations(data.TagPositions,results);
     errvaldis = getErrorDistances(data.AnchorPositions,data.TagPositions,results);
     title(['Error location: ',num2str(round(errvalloc)) '| distances: ' num2str(round(errvaldis))]);
-    
     
     subplot(4,2,2);
     nicifyPlot(datTag(:,1),'X-coordinates','x','r');

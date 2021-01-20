@@ -34,7 +34,7 @@ close all;
 
 %% Do more computational stuff
 % Read the previously saved cut files
-files = dir('**\*_optitrack.mat');
+files = dir(['**' filesep '*_optitrack.mat']);
 for i = 1:length(files)
     clear optitrack
     pathName = [files(i).folder filesep];

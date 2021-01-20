@@ -14,7 +14,7 @@ else
     cd(apFolder)
 end
 
-files = dir('**\*_4solver.mat');
+files = dir(['**' filesep '*_4solver.mat']);
 files = files(~[files.isdir]);
 if exist('keepPrefix','var')
     files(~contains({files.name},keepPrefix)) = [];
@@ -36,21 +36,4 @@ catch err
 end
 cd(ap.thisFile);
 
-
-    function [output] = findSubFolderPath(absolutePath,rootFolder,nameFolder)
-        if ~contains(absolutePath,rootFolder)
-            error([newline mfilename ': ' newline 'Rootfolder not within absolutePath' newline]);
-        end
-        startDir = fullfile(extractBefore(absolutePath,rootFolder),rootFolder);
-        dirs = dir([startDir filesep '**' filesep '*']);
-        dirs(~[dirs.isdir])=[];
-        dirs(contains({dirs.name},'.'))=[];
-        dirs(~contains({dirs.name},nameFolder))=[];
-        if length(dirs)>1
-            warning([newline mfilename ': ' newline 'Multiple possible folders found' newline]);
-            output = dirs;
-        else
-            output = fullfile(dirs(1).folder,dirs(1).name);
-        end
-    end
 end

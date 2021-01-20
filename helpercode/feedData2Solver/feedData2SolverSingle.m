@@ -4,9 +4,7 @@ close all; clc;
 if ~exist('apFolderMeasurements','var')
     apThisFile = fileparts(mfilename('fullpath'));
     cd(apThisFile);
-    ap.code_measurements = findSubFolderPath(pwd,'MEASUREMENTS','CODE');
     ap.measurements = findSubFolderPath(pwd,'UWB','MEASUREMENT_DATA');
-    addpath(genpath(ap.code_measurements));
 else
     if ~exist(apFolderMeasurements,'dir')
         error([newline mfilename ': ' newline 'Path does not exist' newline]);
@@ -50,13 +48,14 @@ for nF = 1:length(files)
                 result.murphy.coord(nR,1:3) = solver_murphy_3d(data.Distances(nR,:),data.AnchorPositions)';
                 out = solver_fabert_lin2a_3d(data.Distances(nR,:),data.AnchorPositions);
                 result.faber.coord(nR,1:3) = out(1:3);
+                result.data = data;
             catch err
                 warning([err.message ', index: ' num2str(nR)])
             end
         end
         
         %% Plot, and save
-%         load(replace(apRawMat,'_4solver','_optitrack'));
+        load(replace(apRawMat,'_4solver','_optitrack'));
             
         [result.larsson.errloc,result.larsson.errdis,r.larsson.fig] = ...
             plotTagAnchorMeasurement(data,result.larsson.coord);
@@ -67,7 +66,7 @@ for nF = 1:length(files)
         savefig(r.larsson.fig,replace(apRawMat,'_4solver.mat','_larsson_results.fig'));
         savefig(r.murphy.fig,replace(apRawMat,'_4solver.mat','_murphy_results.fig'));
         savefig(r.faber.fig,replace(apRawMat,'_4solver.mat','_faber_results.fig'));      
-        save(replace(apRawMat,'_4solver','_results'),'result');
+        save(replace(apRawMat,'_4solver','_results_solver'),'result');
         
         dur = data.DistancesTimes(end)-data.DistancesTimes(1);
         nsamp = length(data.Distances);
@@ -83,38 +82,3 @@ end
 save('results_ranging.mat','outputTable');
 rmpath(genpath(ap.simulation));
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function [output] = findSubFolderPath(absolutePath,rootFolder,nameFolder)
-
-if ~contains(absolutePath,rootFolder)
-    error([newline mfilename ': ' newline 'Rootfolder not within absolutePath' newline]);
-end
-startDir = fullfile(extractBefore(absolutePath,rootFolder),rootFolder);
-dirs = dir([startDir filesep '**' filesep '*']);
-dirs(~[dirs.isdir])=[];
-dirs(contains({dirs.name},'.'))=[];
-dirs(~contains({dirs.name},nameFolder))=[];
-if length(dirs)>1
-    warning([newline mfilename ': ' newline 'Multiple possible folders found' newline]);
-    output = dirs;
-else
-    output = fullfile(dirs(1).folder,dirs(1).name);
-end
-
-end
-
-

@@ -36,23 +36,8 @@ end
 cd ..
 save('RUNSOLVERRECHECKVINAY.mat','matresults');
 
-
-plotViolinPlots(matresults)
-plotCDFsOfDistances(matresults)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+plotViolinPlots(matresults);
+plotCDFsOfDistances(matresults);
 
 rmpath(genpath(ap.RecheckVinay));
 rmpath(genpath(ap.SIMULATION));
@@ -76,7 +61,7 @@ end
 function cleanOutputDir(ap)
 if exist(ap,'dir')
     try
-    rmdir(ap,'s');
+        rmdir(ap,'s');
     catch
     end
 end
@@ -88,4 +73,3 @@ cd(ap.testData);
 txtfile = makeFullPathFromDirOutput(dir('*.txt'));
 cd(ap.thisFile)
 end
-

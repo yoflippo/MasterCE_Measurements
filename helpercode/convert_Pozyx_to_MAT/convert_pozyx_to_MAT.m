@@ -3,7 +3,7 @@ function convert_pozyx_to_MAT()
 apThisFile = fileparts(mfilename('fullpath'));
 cd(apThisFile);
 cd(findSubFolderPath(pwd,'MEASUREMENTS','MEASUREMENT_DATA'));
-files = dir('**\*.txt');
+files = dir(['**' filesep '*.txt']);
 files(~contains({files.name},'(')) = [];
 files(~contains({files.name},')')) = [];
 

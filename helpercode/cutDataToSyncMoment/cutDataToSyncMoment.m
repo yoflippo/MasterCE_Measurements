@@ -6,7 +6,7 @@
 
 function [optiSync] = cutDataToSyncMoment(optitrack)
 optiSync = optitrack;
-
+close all;
 %% Find sync RigidBody
 idxSyncMarkers = contains(optiSync.names,'Sync','IgnoreCase',true);
 
@@ -19,13 +19,12 @@ if ~any(idxSyncMarkers) % Do some manual stuff
     % let the user select the first moment in time when it starts and stops
     idxUnlabMarker = find(contains(optiSync.names,'Unlabeled','IgnoreCase',true));
     tmp_idx = idxUnlabMarker(1);
+    figure('units','normalized','outerposition',[0 0 1 1])
     plot(optiSync.coordinates{tmp_idx});
     if input('Is this a Sync Marker set? Yes=1, No=0: ')
         disp('Please zoom in to start sync and press enter');
-        pause
         [s.Start,~] = ginput(1);
         disp('Please zoom to END of the sync signal and press enter and selected it');
-        pause
         [s.Stop,~] = ginput(1);
     else
         disp('Please manually find the sync marker and create the needed vars');

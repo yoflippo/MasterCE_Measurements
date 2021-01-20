@@ -1,11 +1,5 @@
-% CONVERTOPTITRACKANDPOZYXCARRANGINGDATA
-% BY: 2020  M. Schrauwen (markschrauwen@gmail.com)
-
-% $Revision: 0.0.0 $  $Date: 2020-09-11 $
-% Creation of this function.
-
 function convertOptitrackAndPozyxPositioning()
-apCode = findSubFolderPath(pwd,'MEASUREMENTS','CODE');
+apCode = findSubFolderPath(pwd,'MEASUREMENTS','MEASUREMENT_DATA');
 addpath(genpath(apCode));
 convert_PozyxPositioning_to_MAT_run();
 addpath(genpath(apCode));
