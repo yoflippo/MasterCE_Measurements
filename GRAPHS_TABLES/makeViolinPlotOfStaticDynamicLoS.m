@@ -1,6 +1,8 @@
 function makeViolinPlotOfStaticDynamicLoS()
 close all; clc;
 
+set(0,'defaultTextInterpreter','none'); 
+
 if ~exist('apFolderMeasurements','var')
     apThisFile = fileparts(mfilename('fullpath'));
     cd(apThisFile);
@@ -24,8 +26,10 @@ files = removeUselessFilesFromDirOutput(files);
 
 sErrorStatic = combineErrors(filesStatic);
 makeViolinPlotsOfDistances(sErrorStatic,'Violin plots of distances between trilateration and ground truth - STATIC LoS',apThisFile);
+makeBoxPlotsOfDistances(sErrorStatic,'Violin plots of distances between trilateration and ground truth - STATIC LoS',apThisFile);
 sErrorDynamic = combineErrors(filesDynamic);
 makeViolinPlotsOfDistances(sErrorDynamic,'Violin plots of distances between trilateration and ground truth - DYNAMIC LoS',apThisFile);
+makeBoxPlotsOfDistances(sErrorDynamic,'Violin plots of distances between trilateration and ground truth - DYNAMIC LoS',apThisFile);
 end
 
 
@@ -42,6 +46,33 @@ ylim([0 300]);
 oldPath = pwd;
 cd(apThisFile);
 saveTightFigure(gcf,['ViolinPlot_' replace(extractAfter(titlePlot,' - '),' ','_') '.png']);
+cd(oldPath);
+end
+
+
+function makeBoxPlotsOfDistances(structErrors,titlePlot,apThisFile)
+figure('units','normalized','outerposition',[0 0 0.4 0.5],'Visible','on');
+bh = boxplot([structErrors.murphy' structErrors.larsson' structErrors.faber'], ...
+    {'Murphy' 'Larsson' 'Faber'},'Notch','on');
+
+grid on; grid minor; title(titlePlot);
+ylabel('Distance from groundtruth [mm]');
+
+hAx=gca; hAx.XAxis.TickLabelInterpreter='tex';
+hAx.XAxis.Label.Interpreter = 'tex';
+
+set(bh,'LineWidth', 1);
+grid on; grid minor;
+
+Fh = gcf;
+Kids = Fh.Children;
+setFont(findobj(Kids,'Type','Axes'),12)
+
+ylim([0 600]);
+
+oldPath = pwd;
+cd(apThisFile);
+saveTightFigure(gcf,['BoxPlot_' replace(extractAfter(titlePlot,' - '),' ','_') '.png']);
 cd(oldPath);
 end
 
@@ -93,12 +124,12 @@ if not(exist('fontsize','var'))
 end
 
 Fh = gcf;
-
 Kids = Fh.Children;
-AxAll = findobj(Kids,'Type','Axes');
 
+AxAll = findobj(Kids,'Type','Axes');
 Ax1 = AxAll(1);
-set(Ax1,'LineWidth',1)
+set(Ax1,'LineWidth',0.5)
+
 setFont(Ax1,fontsize)
 end
 

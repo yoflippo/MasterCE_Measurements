@@ -8,14 +8,10 @@ Tags = optitrack.coordinatesFilled(idxTags);
 
 figure;
 for nT = 1:length(Tags)
-    
+    figure('units','normalized','outerposition',[0.1 0.1 0.9 0.9])
     datTag = Tags{nT};
     subplot(221);
-    plotAnchors(optitrack.Anchors)
-    hold on; grid on; grid minor;
-    scatter3(datTag(:,1),datTag(:,2),datTag(:,3),'g','LineWidth',2);
-    xlabel('x');ylabel('y');zlabel('z');
-    title(replace(optitrack.name,'_','-'));
+    plot3DData(optitrack,datTag);
     
     subplot(222);
     nicifyPlot(datTag(:,1),'X-coordinates','x','r');
@@ -27,17 +23,12 @@ end
 end
 
 
-function plot3DData(vector)
-figure;
-subplot(311);
-plot(vector(:,1));
-hold on;
-subplot(312);
-plot(vector(:,2));
-hold on;
-subplot(313);
-plot(vector(:,3));
-hold on;
+function plot3DData(optitrack,datTag)
+    plotAnchors(optitrack.Anchors)
+    hold on; grid on; grid minor;
+    scatter3(datTag(:,1),datTag(:,2),datTag(:,3),'g','LineWidth',2);
+    xlabel('x');ylabel('y');zlabel('z');
+    title(replace(optitrack.name,'_','-'));
 end
 
 function plotAnchors(anchorstruct)
