@@ -1,37 +1,34 @@
-function particle_filter_run()
-close all; clc;
+close all; clc; clearvars;
+
 [ap.thisFile, nm.CurrFile] = fileparts(mfilename('fullpath'));
 cd(ap.thisFile)
-
-ap.synced = findSubFolderPath(mfilename('fullpath'),'MEASUREMENTS','synced');
 addpath(genpath(ap.thisFile));
-addpath(genpath(ap.synced));
+files = makeFullPathFromDirOutput(dir(['**' filesep '*.mat']));
 
-files = makeFullPathFromDirOutput(dir([ap.synced filesep '*.mat']));
-
-m1 = load(files(1).fullpath);
-samplefrequency = 100;
+data = load(files(1).fullpath);
+samplefrequency = 20;
 numberOfParticles = 700;
 circleRadius = 300;
 
 hfig = figure('units','normalized','outerposition',[0.5 0 0.5 1]);
-set(hfig,'doublebuffer','off');
 
-court = drawRectangleBasedOnAnchorsAndCoordinateSystem(m1.sOpti.Anchors);
-[uwb,opti,wmpm] = makeAllSyncedOutputSameLength(m1.uwb,m1.opti,m1.wmpm,samplefrequency);
+court = drawCourtAndAnchors(data.sOpti.Anchors);
+[uwb,opti,wmpm] = makeAllSyncedOutputSameLength(data.uwb,data.opti,data.wmpm,samplefrequency);
 
-set(gca, 'xlimmode','manual',...
-    'ylimmode','manual',...
-    'zlimmode','manual',...
-    'climmode','manual',...
-    'alimmode','manual');
 
-uwb = improveUWB(uwb);
-plotSystems(hfig,uwb,opti,wmpm);
-hold on;
+% set(gca, 'xlimmode','manual',...
+%     'ylimmode','manual',...
+%     'zlimmode','manual',...
+%     'climmode','manual',...
+%     'alimmode','manual');
 
-startValue = 5600;
-[area, hdc] = drawCircle(uwb.x(startValue),uwb.y(startValue),circleRadius);
+plotSystems(hfig,uwb,opti,wmpm); hold on;
+drawPartialCircleInCourt(court,1,data.uwb.rawdata.DistancesUWB(1,1));
+drawPartialCircleInCourt(court,3,data.uwb.rawdata.DistancesUWB(1,3));
+
+
+
+startValue = 1;
 particles = drawParticlesInsideCircle(numberOfParticles,uwb.x(startValue),uwb.y(startValue),circleRadius);
 removeDrawnParticles(particles);
 
@@ -55,7 +52,6 @@ for nS = startValue:length(uwb.x)
     drawnow;
     removeDrawnParticles(particlesOld);
 end
-end
 
 
 
@@ -75,37 +71,9 @@ catch
 end
 end
 
-function axes_h = plotCoordinatesOfSystem(hfig,scoord,color)
-if not(exist('color','var'))
-    color = '';
-end
-axes_h = get(hfig,'CurrentAxes');
-plot(axes_h,scoord.x,scoord.y,'Color',color);
-end
 
 
-function uwb = improveUWB(uwb)
-uwb.x = filteruwb(uwb.x);
-uwb.y = filteruwb(uwb.y);
-    function vector = filteruwb(vector)
-        vector = smooth(vector,80);
-        %         vector = smooth(vector,'sgolay',2);
-    end
-end
 
-function [c,h] = drawCircle(x,y,radius)
-p = 0:pi/50:2*pi;
-c.xcor = radius * cos(p) + x;
-c.ycor = radius * sin(p) + y;
-
-h(1) = plot(c.xcor,c.ycor,'LineWidth',1,'Color','black');
-hold on;
-h(2) = plot(x,y,'Marker','.','MarkerSize',15,'LineWidth',5,'Color','red');
-
-c.origin.x = x;
-c.origin.y = y;
-c.radius = radius;
-end
 
 function [h] = drawDot(x,y,color)
 if not(exist('color','var'))
@@ -121,7 +89,17 @@ cmapuwb = grayf*[1 0 0];
 cmapwmpm = grayf*[0 0 1];
 cmapopti = grayf*[1 1 1];
 
-plotCoordinatesOfSystem(hfig,uwb,cmapuwb)
+plotCoordinatesOfSystem(hfig,uwb,cmapuwb);
 plotCoordinatesOfSystem(hfig,opti,cmapopti);
-plotCoordinatesOfSystem(hfig,wmpm,cmapwmpm)
+plotCoordinatesOfSystem(hfig,wmpm,cmapwmpm);
+end
+
+
+
+function axes_h = plotCoordinatesOfSystem(hfig,scoord,color)
+if not(exist('color','var'))
+    color = '';
+end
+axes_h = get(hfig,'CurrentAxes');
+plot(axes_h,scoord.x,scoord.y,'Color',color);
 end

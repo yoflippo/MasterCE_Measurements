@@ -9,6 +9,7 @@ wmpmsl = makeRightLength(wmpm.time,wmpm.coord,vecTime);
 wmpmsl.vel = interp1(wmpm.time,wmpm.velframe,vecTime)';
 end
 
+
 function uwbsl = makeUWBsameLengthWithoutResampling(uwb,vecTime)
 cntUwb = 1;
 for nT = 1:length(vecTime)
@@ -21,6 +22,7 @@ end
 uwbsl.time = vecTime;
 end
 
+
 function var = makeRightLength(varTime,varCoord,time)
 var.x = interp1(varTime,varCoord.x,time)';
 var.y = interp1(varTime,varCoord.y,time)';
@@ -28,11 +30,10 @@ var.time = time;
 var = makeNaNZeroStruct(var);
 end
 
+
 function str = makeNaNZeroStruct(str)
 str.x = makeNaNZero(str.x);
 str.y = makeNaNZero(str.y);
 end
 
-function input = makeNaNZero(input)
-input(isnan(input)) = 0;
-end
+

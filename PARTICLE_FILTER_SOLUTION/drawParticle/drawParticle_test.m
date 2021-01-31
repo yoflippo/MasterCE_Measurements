@@ -1,9 +1,11 @@
 function drawParticle_test()
 close all; 
-figure; plot(randn(1,1000),randn(1,1000)); hold on;
-drawParticle(1,1,180,'red')
+figure; plot(10*randn(1,1000),10*randn(1,1000)); hold on;
+% drawParticle(1,1,180,'red')
 hold on;
-drawParticle(-3,4,70,'red')
+% drawParticle(-3,4,70,'red')
+drawParticle(0,0,45,'red')
+drawParticle(5,5,270,'g')
 axis equal
 end
 

@@ -1,6 +1,14 @@
 function checkToImproveUWB(uwb,opti)
 %% test to improve UWB data based on optitrack data
 close all;
+[ap.thisFile, nm.CurrFile] = fileparts(mfilename('fullpath'));
+cd(ap.thisFile)
+
+ap.synced = findSubFolderPath(mfilename('fullpath'),'MEASUREMENTS','synced');
+addpath(genpath(ap.thisFile));
+files = makeFullPathFromDirOutput(dir([ap.synced filesep '*.mat']));
+
+load(files(2).fullpath);
 
 [uwb2, opti2] = makeSameLength(uwb,opti);
 sumCorrelation(uwb2,opti2);
@@ -12,8 +20,8 @@ matOpti = makeMatrixFromStruct(opti2);
 matUwb3 = makeMatrixFromStruct(uwb3);
 matUwb2 = makeMatrixFromStruct(uwb2);
 
-getErrorProfile(matUwb2,matOpti)
-getNtimesStdOfDifference(5,matOpti,matUwb3)
+% getErrorProfile(matUwb2,matOpti)
+% getNtimesStdOfDifference(5,matOpti,matUwb3)
 
 plot3duwbopti(matUwb3,matOpti)
 plot3duwbopti(matUwb2,matOpti)
@@ -24,14 +32,15 @@ end
 function sumCorrelation(uwb,opti)
 [Corrx,Pvalx]= corrcoef([uwb.x opti.x]);
 [Corry,Pvaly]= corrcoef([uwb.y opti.y]);
-[Corrz,Pvalz]= corrcoef([uwb.y opti.y]);
-Correlation = Corrx(2,1) + Corry(2,1)+ Corrz(2,1);
-pavlue = Pvalx(2,1) + Pvaly(2,1) + Pvalz(2,1);
-[Correlation pavlue]
+
+[icc21([uwb.x opti.x]) icc21([uwb.y opti.y]) rmse(uwb.x - opti.x) rmse(uwb.y - opti.y)]
 end
 
 
 function [uwbsl, optisl] = makeSameLength(uwb,opti)
+varianceUWB.x = var(uwb.coord.x);
+varianceUWB.y = var(uwb.coord.y);
+
 maxTimeUwb = uwb.time(end);
 maxTimeOpti = opti.time(end);
 maxTimeRound = round(min(maxTimeUwb,maxTimeOpti));
@@ -42,6 +51,7 @@ uwbsl.y = interp1(uwb.time,uwb.coord.y,vecTime)';
 uwbsl.z = interp1(uwb.time,uwb.coord.z,vecTime)';
 uwbsl.time = vecTime;
 uwbsl = makeNaNZeroStruct(uwbsl);
+
 optisl.x = interp1(opti.time,opti.coord.x,vecTime)';
 optisl.y = interp1(opti.time,opti.coord.y,vecTime)';
 optisl.z = interp1(opti.time,opti.coord.z,vecTime)';
@@ -65,6 +75,8 @@ end
 
 function matrix = makeMatrixFromStruct(str)
 matrix = [str.x str.y str.z];
+end
+
 function uwb = improveUWB(uwb)
 uwb.x = filteruwb(uwb.x);
 uwb.y = filteruwb(uwb.y);
@@ -73,12 +85,12 @@ uwb.z = filteruwb(uwb.z);
     function vector = filteruwb(vector)
         %         [var.b,var.a] = butter(2,0.5/10,'low');
         %         vector = filtfilt(var.b,var.a,vector);
-        vector = smooth(vector,10);
-        vector = smooth(vector,'sgolay',2);
+%         vector = smooth(vector,10);
+        vector = smooth(vector,20,'sgolay',1);
     end
 end
 
-end
+
 
 
 
