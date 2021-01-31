@@ -18,7 +18,7 @@ else
     [uwbdata] = load(uwb.fullpath);
     uwbdata = uwbdata.pozyx;
 end
-
+sUWB.rawdata = uwbdata.data;
 data.AnchorPositions = (cell2mat(optitrack.Anchors.UWB_Antenna')*10)';
 sUWB = convertPozyxDataToWorkableForm(optitrack,uwbdata);
 data.Distances = sUWB.DistancesUWB;
