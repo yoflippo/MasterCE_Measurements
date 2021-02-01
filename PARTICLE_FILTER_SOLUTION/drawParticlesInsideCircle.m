@@ -1,4 +1,5 @@
 function particles = drawParticlesInsideCircle(n,x,y,radius)
+% particles = drawParticlesInsideCircle(numberOfParticles,uwb.x(startValue),uwb.y(startValue),circleRadius);
 or = randWithinBounds(0,360,n,1);
 [xr,yr] = randWithinCircle(x,y,radius,n);
 

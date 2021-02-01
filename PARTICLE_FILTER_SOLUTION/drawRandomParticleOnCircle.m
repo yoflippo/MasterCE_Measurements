@@ -7,6 +7,7 @@ particles.y = [];
 particles.orientation  = [];
 particles.handles = [];
 
+
 for nR = 1:nCols
     x = pos.anc(nR).x;
     y = pos.anc(nR).y;

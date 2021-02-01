@@ -13,45 +13,52 @@ hfig = figure('units','normalized','outerposition',[0.5 0 0.5 1]);
 court = drawCourtAndAnchors(data.sOpti.Anchors);
 [uwb,opti,wmpm] = cleanUpData(data,court);
 
-samplefrequency = 20;
+fs = 1/mean(diff(wmpm.t));
 numberOfParticles = 400;
 circleRadius = 300;
 variance.uwb = 1e5; % mm
-variance.velocity = 180; %% mm/s
+variance.velocity = 50; %% mm/s
 variance.angularRate = 10; %% deg/s
 
 plotSystems(hfig,uwb,opti,wmpm);
 
-startValue = 1;
+startValue = 2;
 [pos.anc(1).x,pos.anc(1).y] = drawPartialCircleInCourt(court,startValue,1,uwb.a);
 [pos.anc(2).x,pos.anc(2).y] = drawPartialCircleInCourt(court,startValue,2,uwb.a);
 particles = drawRandomParticleOnCircle(court,pos,numberOfParticles,variance.uwb);
 
-particles = addOtherStateVariables(particles,variance);
-% particles = drawParticlesInsideCircle(numberOfParticles,uwb.x(startValue),uwb.y(startValue),circleRadius);
-removeDrawnParticles(particles);
+particles = addOtherStateVariables(particles,variance,wmpm);
+particles = addWeights(particles);
+% removeDrawnParticles(particles);
 
-hd = drawDot(opti.x(startValue),opti.y(startValue),'green');
-hd_wmpm = drawDot(wmpm.x(startValue),wmpm.y(startValue),'green');
-ylim([-2700 1800]); xlim([-2700 1100]);
-
-for nS = startValue:length(uwb.x)
-    
-    
-    %     delete(hdc(1)); delete(hdc(2)); delete(hdc);     delete(hd_wmpm);
-    %
-    %     [particles,distance,orientation] = moveParticles(particles,nS,wmpm,samplefrequency);
-    %     [area,hdc] = drawCircle(uwb.x(nS),uwb.y(nS),circleRadius);
-    %     drawDot(uwb.x(nS),uwb.y(nS),'blue');
-    %     drawDot(mean([particles.x]),mean([particles.y]),'magenta');
-    %     drawDot(opti.x(nS),opti.y(nS),'green');
-    %     hd_wmpm = drawDot(wmpm.x(nS),wmpm.y(nS),'green');
-    %     particles = removeParticlesOutsideArea(particles,area);
-    %     particles = replenishAndRenewParticles(particles,numberOfParticles,area,distance);
-    %
-    %     particlesOld = drawParticles(particles,'blue');
-    %     drawnow;
-    %     removeDrawnParticles(particlesOld);
+% hd = drawDot(opti.x(startValue),opti.y(startValue),'green');
+% hd_wmpm = drawDot(wmpm.x(startValue),wmpm.y(startValue),'green');
+% ylim([-2700 1800]); xlim([-2700 1100]);
+cnt = 1;
+for nS = startValue:length(wmpm.x)
+    wmpmTime = wmpm.t(nS);
+    particles = moveParticles(particles,fs);
+    drawParticles(particles,'blue');
+    if wmpmTime > uwb.t(cnt)
+        % Do position update
+    else % Do angular rate AND velocity update
+        updateWeightsBasedOnWMPM(particles,wmpm.velframe(nS),wmpm.angularRate(nS),variance)
+        drawParticles(particles,'blue');
+        %     delete(hdc(1)); delete(hdc(2)); delete(hdc);     delete(hd_wmpm);
+        %
+        %     [particles,distance,orientation] = moveParticles(particles,nS,wmpm,samplefrequency);
+        %     [area,hdc] = drawCircle(uwb.x(nS),uwb.y(nS),circleRadius);
+        %     drawDot(uwb.x(nS),uwb.y(nS),'blue');
+        %     drawDot(mean([particles.x]),mean([particles.y]),'magenta');
+        %     drawDot(opti.x(nS),opti.y(nS),'green');
+        %     hd_wmpm = drawDot(wmpm.x(nS),wmpm.y(nS),'green');
+        %     particles = removeParticlesOutsideArea(particles,area);
+        %     particles = replenishAndRenewParticles(particles,numberOfParticles,area,distance);
+        %
+        %     particlesOld = drawParticles(particles,'blue');
+        %     drawnow;
+        %     removeDrawnParticles(particlesOld);
+    end
 end
 
 
@@ -67,7 +74,7 @@ uwb = addAnchorTagDistances(uwb);
         sStruct.y = sStruct.coord.y(idxs) + court.offsety;
         sStruct.t = sStruct.time(idxs)';
         try
-            sStruct.velframe = sStruct.velframe(idxs);
+            sStruct.velframe = sStruct.velframe(idxs)*1000; %%mm/s
             sStruct.angularRate = sStruct.angularRate(idxs);
         catch
         end
