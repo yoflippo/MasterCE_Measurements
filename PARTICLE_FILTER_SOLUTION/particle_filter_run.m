@@ -6,22 +6,22 @@ addpath(genpath(ap.thisFile));
 files = makeFullPathFromDirOutput(dir(['**' filesep '*.mat']));
 
 data = load(files(1).fullpath);
+hfig = figure('units','normalized','outerposition',[0.5 0 0.5 1]);
+court = drawCourtAndAnchors(data.sOpti.Anchors);
+[uwb,opti,wmpm] = cleanUpData(data,court);
+
 samplefrequency = 20;
-numberOfParticles = 360;
+numberOfParticles = 400;
 circleRadius = 300;
 variance.uwb = 1e5; % mm
 
-hfig = figure('units','normalized','outerposition',[0.5 0 0.5 1]);
-
-court = drawCourtAndAnchors(data.sOpti.Anchors);
-[uwb,opti,wmpm] = makeAllSyncedOutputSameLength(data.uwb,data.opti,data.wmpm,samplefrequency,court);
-
-plotSystems(hfig,uwb,opti,wmpm); hold on; n = 2;
-[pos.anc(1).x,pos.anc(1).y] = drawPartialCircleInCourt(court,n,1,data.uwb.rawdata.DistancesUWB);
-[pos.anc(2).x,pos.anc(2).y] = drawPartialCircleInCourt(court,n,2,data.uwb.rawdata.DistancesUWB);
-particles = drawRandomParticleOnCircle(court, pos,numberOfParticles,variance.uwb);
+plotSystems(hfig,uwb,opti,wmpm); 
 
 startValue = 1;
+[pos.anc(1).x,pos.anc(1).y] = drawPartialCircleInCourt(court,startValue,1,data.uwb.rawdata.DistancesUWB);
+[pos.anc(2).x,pos.anc(2).y] = drawPartialCircleInCourt(court,startValue,2,data.uwb.rawdata.DistancesUWB);
+particles = drawRandomParticleOnCircle(court, pos,numberOfParticles,variance.uwb);
+
 % particles = drawParticlesInsideCircle(numberOfParticles,uwb.x(startValue),uwb.y(startValue),circleRadius);
 removeDrawnParticles(particles);
 
@@ -30,23 +30,37 @@ hd_wmpm = drawDot(wmpm.x(startValue),wmpm.y(startValue),'green');
 ylim([-2700 1800]); xlim([-2700 1100]);
 
 for nS = startValue:length(uwb.x)
-    delete(hdc(1)); delete(hdc(2)); delete(hdc);     delete(hd_wmpm);
     
-    [particles,distance,orientation] = moveParticles(particles,nS,wmpm,samplefrequency);
-    [area,hdc] = drawCircle(uwb.x(nS),uwb.y(nS),circleRadius);
-    drawDot(uwb.x(nS),uwb.y(nS),'blue');
-    drawDot(mean([particles.x]),mean([particles.y]),'magenta');
-    drawDot(opti.x(nS),opti.y(nS),'green');
-    hd_wmpm = drawDot(wmpm.x(nS),wmpm.y(nS),'green');
-    particles = removeParticlesOutsideArea(particles,area);
-    particles = replenishAndRenewParticles(particles,numberOfParticles,area,distance);
-
-    particlesOld = drawParticles(particles,'blue');
-    drawnow;
-    removeDrawnParticles(particlesOld);
+    
+    %     delete(hdc(1)); delete(hdc(2)); delete(hdc);     delete(hd_wmpm);
+    %
+    %     [particles,distance,orientation] = moveParticles(particles,nS,wmpm,samplefrequency);
+    %     [area,hdc] = drawCircle(uwb.x(nS),uwb.y(nS),circleRadius);
+    %     drawDot(uwb.x(nS),uwb.y(nS),'blue');
+    %     drawDot(mean([particles.x]),mean([particles.y]),'magenta');
+    %     drawDot(opti.x(nS),opti.y(nS),'green');
+    %     hd_wmpm = drawDot(wmpm.x(nS),wmpm.y(nS),'green');
+    %     particles = removeParticlesOutsideArea(particles,area);
+    %     particles = replenishAndRenewParticles(particles,numberOfParticles,area,distance);
+    %
+    %     particlesOld = drawParticles(particles,'blue');
+    %     drawnow;
+    %     removeDrawnParticles(particlesOld);
 end
 
 
+function [opti,uwb,wmpm] = cleanUpData(data,court)
+uwb = addOnlyRelevantSignal(data.uwb,court);
+opti = addOnlyRelevantSignal(data.opti,court);
+wmpm = addOnlyRelevantSignal(data.wmpm,court);
+
+    function sStruct = addOnlyRelevantSignal(sStruct,court)
+        idxs = sStruct.cleanSignalTimeIdx(1):sStruct.cleanSignalTimeIdx(2);
+        sStruct.xclean = sStruct.coord.x(idxs) + court.offsetx;
+        sStruct.yclean = sStruct.coord.y(idxs) + court.offsety;
+        sStruct.tclean = sStruct.time(idxs)';
+    end
+end
 
 
 
@@ -64,9 +78,6 @@ end
 end
 
 
-
-
-
 function [h] = drawDot(x,y,color)
 if not(exist('color','var'))
     color = 'black';
@@ -80,18 +91,17 @@ grayf = 0.8;
 cmapuwb = grayf*[1 0 0];
 cmapwmpm = grayf*[0 0 1];
 cmapopti = grayf*[1 1 1];
-
+hold on;
 plotCoordinatesOfSystem(hfig,uwb,cmapuwb);
 plotCoordinatesOfSystem(hfig,opti,cmapopti);
-plotCoordinatesOfSystem(hfig,wmpm,cmapwmpm);
+% plotCoordinatesOfSystem(hfig,wmpm,cmapwmpm);
 end
 
 
-
-function axes_h = plotCoordinatesOfSystem(hfig,scoord,color)
+function axes_h = plotCoordinatesOfSystem(hfig,d,color)
 if not(exist('color','var'))
     color = '';
 end
 axes_h = get(hfig,'CurrentAxes');
-plot(axes_h,scoord.x,scoord.y,'Color',color);
+plot(axes_h,d.xclean,d.yclean,'Color',color);
 end

@@ -3,7 +3,6 @@ if not(exist('csize','var')) || isempty(csize)
     csize = 10;
 end
 
-
 linewidth = 2;
 direction = -direction;
 

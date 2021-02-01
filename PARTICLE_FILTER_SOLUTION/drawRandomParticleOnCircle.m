@@ -1,4 +1,4 @@
-function particles = drawRandomParticleOnCircle(court,pos,numberParticle,variance)
+function particles = drawRandomParticleOnCircle(court,pos,numberParticles,variance)
 
 [nRows,nCols] = size(pos.anc);
 
@@ -10,11 +10,10 @@ particles.handles = [];
 for nR = 1:nCols
     x = pos.anc(nR).x;
     y = pos.anc(nR).y;
-    ancx = interp1(1:length(x),x,1:1/1:length(x));
-    ancy = interp1(1:length(y),x,1:1/1:length(y));
-    
-    ancx = generate_signal(pos.anc(nR).x,variance);
-    ancy = generate_signal(pos.anc(nR).y,variance);
+
+    randIdxs =randi(length(x),1,numberParticles);
+    ancx = generate_signal(pos.anc(nR).x(randIdxs),variance);
+    ancy = generate_signal(pos.anc(nR).y(randIdxs),variance);
     
     [ancx,ancy] = getCoordinatesInsideCourt(court,ancx,ancy);
     
