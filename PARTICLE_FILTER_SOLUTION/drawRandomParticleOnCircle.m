@@ -12,8 +12,8 @@ for nR = 1:nCols
     y = pos.anc(nR).y;
 
     randIdxs =randi(length(x),1,numberParticles);
-    ancx = generate_signal(pos.anc(nR).x(randIdxs),variance);
-    ancy = generate_signal(pos.anc(nR).y(randIdxs),variance);
+    ancx = addVarianceToSignal(pos.anc(nR).x(randIdxs),variance);
+    ancy = addVarianceToSignal(pos.anc(nR).y(randIdxs),variance);
     
     [ancx,ancy] = getCoordinatesInsideCourt(court,ancx,ancy);
     
@@ -24,8 +24,3 @@ end
 particles.handles = drawParticles(particles);
 end
 
-function [outsignal, outvar] = generate_signal(signal, var)
-noise = randn(size(signal))*sqrt(var);
-outsignal = signal + noise;
-outvar = var;
-end

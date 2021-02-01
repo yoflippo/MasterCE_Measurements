@@ -3,7 +3,10 @@ close all; clc; clearvars;
 [ap.thisFile, nm.CurrFile] = fileparts(mfilename('fullpath'));
 cd(ap.thisFile)
 addpath(genpath(ap.thisFile));
+cd ..
+cd synced
 files = makeFullPathFromDirOutput(dir(['**' filesep '*.mat']));
+cd(ap.thisFile)
 
 data = load(files(1).fullpath);
 hfig = figure('units','normalized','outerposition',[0.5 0 0.5 1]);
@@ -14,14 +17,17 @@ samplefrequency = 20;
 numberOfParticles = 400;
 circleRadius = 300;
 variance.uwb = 1e5; % mm
+variance.velocity = 180; %% mm/s
+variance.angularRate = 10; %% deg/s
 
-plotSystems(hfig,uwb,opti,wmpm); 
+plotSystems(hfig,uwb,opti,wmpm);
 
 startValue = 1;
-[pos.anc(1).x,pos.anc(1).y] = drawPartialCircleInCourt(court,startValue,1,data.uwb.rawdata.DistancesUWB);
-[pos.anc(2).x,pos.anc(2).y] = drawPartialCircleInCourt(court,startValue,2,data.uwb.rawdata.DistancesUWB);
-particles = drawRandomParticleOnCircle(court, pos,numberOfParticles,variance.uwb);
+[pos.anc(1).x,pos.anc(1).y] = drawPartialCircleInCourt(court,startValue,1,uwb.a);
+[pos.anc(2).x,pos.anc(2).y] = drawPartialCircleInCourt(court,startValue,2,uwb.a);
+particles = drawRandomParticleOnCircle(court,pos,numberOfParticles,variance.uwb);
 
+particles = addOtherStateVariables(particles,variance);
 % particles = drawParticlesInsideCircle(numberOfParticles,uwb.x(startValue),uwb.y(startValue),circleRadius);
 removeDrawnParticles(particles);
 
@@ -49,16 +55,34 @@ for nS = startValue:length(uwb.x)
 end
 
 
-function [opti,uwb,wmpm] = cleanUpData(data,court)
+function [uwb,opti,wmpm] = cleanUpData(data,court)
 uwb = addOnlyRelevantSignal(data.uwb,court);
 opti = addOnlyRelevantSignal(data.opti,court);
 wmpm = addOnlyRelevantSignal(data.wmpm,court);
+uwb = addAnchorTagDistances(uwb);
 
     function sStruct = addOnlyRelevantSignal(sStruct,court)
         idxs = sStruct.cleanSignalTimeIdx(1):sStruct.cleanSignalTimeIdx(2);
-        sStruct.xclean = sStruct.coord.x(idxs) + court.offsetx;
-        sStruct.yclean = sStruct.coord.y(idxs) + court.offsety;
-        sStruct.tclean = sStruct.time(idxs)';
+        sStruct.x = sStruct.coord.x(idxs) + court.offsetx;
+        sStruct.y = sStruct.coord.y(idxs) + court.offsety;
+        sStruct.t = sStruct.time(idxs)';
+        try
+            sStruct.velframe = sStruct.velframe(idxs);
+            sStruct.angularRate = sStruct.angularRate(idxs);
+        catch
+        end
+    end
+
+    function uwb = addAnchorTagDistances(uwb)
+        idxs = uwb.cleanSignalTimeIdx(1):uwb.cleanSignalTimeIdx(2);
+        
+        uwb.dis.t = uwb.rawdata.TimestampsUWB(uwb.rawdata.cutIdx:end);
+        uwb.dis.t = uwb.dis.t(idxs)';
+        
+        for n = 1:4
+            tmp = uwb.rawdata.DistancesUWB(uwb.rawdata.cutIdx:end,n);
+            uwb.a(:,n) = tmp(idxs);
+        end
     end
 end
 
@@ -103,5 +127,5 @@ if not(exist('color','var'))
     color = '';
 end
 axes_h = get(hfig,'CurrentAxes');
-plot(axes_h,d.xclean,d.yclean,'Color',color);
+plot(axes_h,d.x,d.y,'Color',color);
 end
