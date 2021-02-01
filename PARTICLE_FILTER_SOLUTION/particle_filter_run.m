@@ -7,29 +7,22 @@ files = makeFullPathFromDirOutput(dir(['**' filesep '*.mat']));
 
 data = load(files(1).fullpath);
 samplefrequency = 20;
-numberOfParticles = 700;
+numberOfParticles = 360;
 circleRadius = 300;
+variance.uwb = 1e5; % mm
 
 hfig = figure('units','normalized','outerposition',[0.5 0 0.5 1]);
 
 court = drawCourtAndAnchors(data.sOpti.Anchors);
-[uwb,opti,wmpm] = makeAllSyncedOutputSameLength(data.uwb,data.opti,data.wmpm,samplefrequency);
+[uwb,opti,wmpm] = makeAllSyncedOutputSameLength(data.uwb,data.opti,data.wmpm,samplefrequency,court);
 
-
-% set(gca, 'xlimmode','manual',...
-%     'ylimmode','manual',...
-%     'zlimmode','manual',...
-%     'climmode','manual',...
-%     'alimmode','manual');
-
-plotSystems(hfig,uwb,opti,wmpm); hold on;
-drawPartialCircleInCourt(court,1,data.uwb.rawdata.DistancesUWB(1,1));
-drawPartialCircleInCourt(court,3,data.uwb.rawdata.DistancesUWB(1,3));
-
-
+plotSystems(hfig,uwb,opti,wmpm); hold on; n = 2;
+[pos.anc(1).x,pos.anc(1).y] = drawPartialCircleInCourt(court,n,1,data.uwb.rawdata.DistancesUWB);
+[pos.anc(2).x,pos.anc(2).y] = drawPartialCircleInCourt(court,n,2,data.uwb.rawdata.DistancesUWB);
+particles = drawRandomParticleOnCircle(court, pos,numberOfParticles,variance.uwb);
 
 startValue = 1;
-particles = drawParticlesInsideCircle(numberOfParticles,uwb.x(startValue),uwb.y(startValue),circleRadius);
+% particles = drawParticlesInsideCircle(numberOfParticles,uwb.x(startValue),uwb.y(startValue),circleRadius);
 removeDrawnParticles(particles);
 
 hd = drawDot(opti.x(startValue),opti.y(startValue),'green');
@@ -65,8 +58,7 @@ try
     end
 catch
     for n = 1:length(particles)
-        delete(particles(n,1));
-        delete(particles(n,2));
+        delete(particles.handles);
     end
 end
 end

@@ -1,4 +1,4 @@
-function [uwbsl, optisl, wmpmsl] = makeAllSyncedOutputSameLength(uwb,opti,wmpm,fs)
+function [uwbsl, optisl, wmpmsl] = makeAllSyncedOutputSameLength(uwb,opti,wmpm,fs,court)
 maxTimeRound = round(min([uwb.time(end) opti.time(end) wmpm.time(end)]));
 samplefrequency = fs;
 vecTime = 0:1/samplefrequency:max(maxTimeRound);
@@ -7,6 +7,15 @@ uwbsl = makeUWBsameLengthWithoutResampling(uwb,vecTime);
 optisl = makeRightLength(opti.time,opti.coord,vecTime);
 wmpmsl = makeRightLength(wmpm.time,wmpm.coord,vecTime);
 wmpmsl.vel = interp1(wmpm.time,wmpm.velframe,vecTime)';
+
+uwbsl.x = uwbsl.x + court.offsetx;
+uwbsl.y = uwbsl.y + court.offsety;
+
+optisl.x = optisl.x + court.offsetx;
+optisl.y = optisl.y + court.offsety;
+
+wmpmsl.x = wmpmsl.x + court.offsetx;
+wmpmsl.y = wmpmsl.y + court.offsety;
 end
 
 
