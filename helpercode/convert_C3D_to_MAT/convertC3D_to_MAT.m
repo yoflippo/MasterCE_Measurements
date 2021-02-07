@@ -45,7 +45,7 @@ for i = 1:length(files)
     
     optitrack.name = files(i).name;
     optitrack.path = pathName;
-    optitrack = fillGapsOptitrack(optitrack);
+    optitrack = fillGapsOptitrack(optitrack); %%%%%%%%%% 
     
     % Find/Cleanup UWB A/T data
     optitrack = optitrackAnchor2UWBAntenna(optitrack,dir(apRawMat));

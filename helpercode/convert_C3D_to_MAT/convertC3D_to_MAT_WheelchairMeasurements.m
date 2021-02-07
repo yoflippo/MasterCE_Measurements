@@ -42,16 +42,16 @@ for i = 1:length(files)
     apRawMat = fullfile(pathName,fileName);
     load(apRawMat);
     
-    if not(isfield(optitrack,'Tag'))
+%     if not(isfield(optitrack,'Tag'))
         optitrack.name = files(i).name;
         optitrack.path = pathName;
-        optitrack = fillGapsOptitrack(optitrack);
+        optitrack = fillGapsOptitrack(optitrack); %%%%%% FILLED NOT FILLED
         
         % Find/Cleanup UWB A/T data
         optitrack = optitrackAnchor2UWBAntenna(optitrack,dir(apRawMat));
         optitrack =  optitrackTag2UWBAntennaWheelchairTests(optitrack,'RigidBodyTag');
         save(apRawMat,'optitrack');
-    end
+%     end
 end
 
 end

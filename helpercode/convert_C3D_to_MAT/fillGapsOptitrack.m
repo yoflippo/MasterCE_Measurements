@@ -14,6 +14,7 @@ for i = idxvector'
     tmp = optitrack.coordinates{i};
     tmp(tmp==0)=NaN;
     optitrack.coordinatesFilled{i} = fillgaps(tmp,numberOfSamplesToUse,1);
+    optitrack.coordinatesNotFilled{i} = tmp;
     % =========== TEST ===========
     %     try
     %          plot(optitrack.coordinates{i}-optitrackFilled.coordinatesFilled{i});

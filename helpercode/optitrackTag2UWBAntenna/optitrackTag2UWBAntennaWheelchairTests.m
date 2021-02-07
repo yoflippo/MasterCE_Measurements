@@ -21,28 +21,20 @@ out = optitrack;
 tag.idx = contains(optitrack.names,nameOptitrackTag);
 if any(tag.idx)
     tag.coordinates = optitrack.coordinatesFilled(tag.idx);
-    [tagCoordinates,AntennaMarkersIdx,AntennaMarkersCoordinates] = getUWBTagOptitrackMarkers(tag.coordinates);
+    tag.coordinatesNotFilled = optitrack.coordinatesNotFilled(tag.idx);  
+    out.Tag.RawCoordinates = tag.coordinates;
+    out.Tag.RawCoordinatesNotFilled = tag.coordinatesNotFilled;
     
-    %% Finally
+    [tagCoordinates,AntennaMarkersIdx,AntennaMarkersCoordinates] = getUWBTagOptitrackMarkers(tag.coordinates);
     out.Tag.AntennaMarkersIdx = AntennaMarkersIdx;
     out.Tag.CoordinatesIdxRaw = tag.idx;
     out.Tag.Coordinates = tagCoordinates;
-%     % =========== TEST: the effect of filters on TAG detection ===========
-%     [t_tagCoordinates] = getUWBTagOptitrackMarkers(optitrack.coordinatesRaw(tag.idx));
-%     t_tagCoordinates = t_tagCoordinates(optitrack.SyncIdx.Start:optitrack.SyncIdx.Stop,:);
-%     test = out.Tag.Coordinates-t_tagCoordinates;
-%     test = sum(test,'all');
-%     if any(abs(test) > 200)
-%         figure('WindowState','maximized');
-%         plot(out.Tag.Coordinates,'LineWidth',3);
-%         hold on;
-%         plot(t_tagCoordinates,'k');
-%         pause
-%         close all;
-%     end
-%     % =========== TEST: the effect of filters on TAG detection ===========
-    out.Tag.RawCoordinates = tag.coordinates;
     out.Tag.AntennaMarkersCoordinates = AntennaMarkersCoordinates;
+    
+    [tagCoordinates,AntennaMarkersIdx,~] = getUWBTagOptitrackMarkers(tag.coordinates);
+    out.Tag.NotFilled.AntennaMarkersIdx = AntennaMarkersIdx;
+    out.Tag.NotFilled.CoordinatesIdxRaw = tag.idx;
+    out.Tag.NotFilled.Coordinates = tagCoordinates;
 else
     error([newline mfilename ': ' newline 'No Tags found' newline]);
 end
@@ -68,7 +60,6 @@ for nS = 1:length(coordinates{1}(:,1))
     % antenna markers
     for nT = 1:length(coordinates)
         tmp(nT,1:3) = coordinates{nT}(nS,:);
-        
         %         % =========== TEST ===========
         %         subplot(2,2,nT)
         %         plot(tag.coordinates{nT}); grid on; grid minor;

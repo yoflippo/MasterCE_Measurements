@@ -8,7 +8,7 @@ if isfield(data,'TagPositions')
     if blvisible
         h=figure('Visible','on');
     else
-        h=figure('Visible','on');
+        h=figure('Visible','off');
     end
     datTag = data.TagPositions;
     

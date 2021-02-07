@@ -22,8 +22,8 @@ files(~contains({files.name},'RANG_')) = [];
 
 %% Feed to solver
 outputTable(1,:) = table(1,2,3,4,5,6,"test",7,8,9,10,'VariableNames',{'larsson error location','larsson error distance', ...
-            'murphy error location','murphy error distance', ...
-            'faber error location','faber error distance','file','mean velocity','duration','nsamples','f'});
+    'murphy error location','murphy error distance', ...
+    'faber error location','faber error distance','file','mean velocity','duration','nsamples','f'});
 for nF = 1:length(files)
     try
         pathName = [files(nF).folder filesep];
@@ -56,7 +56,7 @@ for nF = 1:length(files)
         
         %% Plot, and save
         load(replace(apRawMat,'_4solver','_optitrack'));
-            
+        
         [result.larsson.errloc,result.larsson.errdis,r.larsson.fig] = ...
             plotTagAnchorMeasurement(data,result.larsson.coord);
         [result.murphy.errloc,result.murphy.errdis,r.murphy.fig] = ...
@@ -65,7 +65,7 @@ for nF = 1:length(files)
             plotTagAnchorMeasurement(data,result.faber.coord);
         savefig(r.larsson.fig,replace(apRawMat,'_4solver.mat','_larsson_results.fig'));
         savefig(r.murphy.fig,replace(apRawMat,'_4solver.mat','_murphy_results.fig'));
-        savefig(r.faber.fig,replace(apRawMat,'_4solver.mat','_faber_results.fig'));      
+        savefig(r.faber.fig,replace(apRawMat,'_4solver.mat','_faber_results.fig'));
         save(replace(apRawMat,'_4solver','_results_solver'),'result');
         
         dur = data.DistancesTimes(end)-data.DistancesTimes(1);

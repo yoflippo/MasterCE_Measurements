@@ -1,4 +1,4 @@
-close all; clearvars; clc;
+close all; clc;
 [ap,nm,files,syncPoints] = init();
 iterateOverFiles(files,syncPoints,ap)
 
