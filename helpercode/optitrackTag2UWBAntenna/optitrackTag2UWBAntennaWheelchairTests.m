@@ -31,7 +31,7 @@ if any(tag.idx)
     out.Tag.Coordinates = tagCoordinates;
     out.Tag.AntennaMarkersCoordinates = AntennaMarkersCoordinates;
     
-    [tagCoordinates,AntennaMarkersIdx,~] = getUWBTagOptitrackMarkers(tag.coordinates);
+    [tagCoordinates,AntennaMarkersIdx,~] = getUWBTagOptitrackMarkers(tag.coordinatesNotFilled);
     out.Tag.NotFilled.AntennaMarkersIdx = AntennaMarkersIdx;
     out.Tag.NotFilled.CoordinatesIdxRaw = tag.idx;
     out.Tag.NotFilled.Coordinates = tagCoordinates;

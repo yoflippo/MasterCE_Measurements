@@ -63,7 +63,7 @@ end
 %     data.DistancesUWB(nF,nA) = table2array(pozyx.data(nA).range(idxCurrentTimeStamp,1));
 % end
 
-%% Filter the distance data by 'repairing' it with fillgaps()
+
 data.DistancesUWB(data.DistancesUWB==Inf)=NaN;
 for nA = 1: num.Anchors
     data.DistancesUWB(:,nA) = round(fillgaps(data.DistancesUWB(:,nA)));

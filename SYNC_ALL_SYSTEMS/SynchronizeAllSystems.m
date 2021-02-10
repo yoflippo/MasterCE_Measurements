@@ -41,6 +41,8 @@ for nF = 1:length(files.wmpm)
         [coordOpti, sOptitrack] = loadAndPlotOptitrackData(currOPTI.fullpath);
         sUWB = applyLarssonToUWBwithOptitrack(sOptitrack,files.uwb(nF));
         [opti,wmpm,uwb] = syncOptiUwbWmpm(coordOpti,WMPM,sUWB,syncPoints(nF,:));
+        opti.syncPoints = syncPoints(nF,:);
+        
         %         checkSynchronisationCoarse(opti,wmpm,uwb);
         %         checkSynchronisationFineGrained(opti,wmpm,syncPoints(nF,:))
         [opti,wmpm,uwb] = addCutIndices(opti,wmpm,uwb,ap,nF);
@@ -97,11 +99,18 @@ end
 coordinates.x = optitrack.Tag.Coordinates(:,1)*10;
 coordinates.y = optitrack.Tag.Coordinates(:,2)*10;
 coordinates.z = optitrack.Tag.Coordinates(:,3)*10;
+
+coordinates.notfilled.x = optitrack.Tag.NotFilled.Coordinates(:,1)*10;
+coordinates.notfilled.y = optitrack.Tag.NotFilled.Coordinates(:,2)*10;
+coordinates.notfilled.z = optitrack.Tag.NotFilled.Coordinates(:,3)*10;
+
 if blPlotVal
     figure;
-    subplot(3,1,1); plot(coordinates.x); title('x coordinates OPTITRACK'); xlabel('frames number');
-    subplot(3,1,2); plot(coordinates.y); title('y coordinates OPTITRACK'); xlabel('frames number');
-    subplot(3,1,3); plot(coordinates.z); title('z coordinates OPTITRACK'); xlabel('frames number');
+    scatter(coordinates.x,coordinates.y,'r'); hold on;
+    scatter(coordinates.notfilled.x,coordinates.notfilled.y,'g')
+%     subplot(3,1,1); plot(coordinates.x); title('x coordinates OPTITRACK'); xlabel('frames number');
+%     subplot(3,1,2); plot(coordinates.y); title('y coordinates OPTITRACK'); xlabel('frames number');
+%     subplot(3,1,3); plot(coordinates.z); title('z coordinates OPTITRACK'); xlabel('frames number');
 end
 end
 
@@ -181,7 +190,6 @@ opti.time = getTimeVector(100,opti.coord.x);
 
 [uwb2.coord, cutIdx] = cutUWBbasedOnOptitrackTiming(100,sync(2), ...
     uwb.TimestampsUWBalignedWithOptitrack,uwb.coordinatesUWBlarsson);
-
 
 wmpm.coord = cutFromBeginOfStruct(wmpm.coordinates,sync(1));
 wmpm.velframe = wmpm.framevel(sync(1):end);

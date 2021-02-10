@@ -133,7 +133,6 @@ eenheid          = 'cm';
 %%	controleren of gebruiker input heeft gegeven.
 beginKanaal       = 1;
 eindKanaal        = aantalKanalen;
-blFillMissingData = 0;
 
 %%	geheugen reserveren voor de 'data' matrix (+1 voor tijd-kolom)
 data        = zeros(numberOfSamples,((eindKanaal-beginKanaal)*3)+1);
@@ -145,13 +144,6 @@ coordinaten = zeros;
 for kanaal = beginKanaal:eindKanaal
     %	inlezen van x-y-z posities van marker (bolletje)
     dataMarker = eval(['dataUnformatted.',namen{kanaal}]);
-    %	omgaan met missende data
-    if blFillMissingData
-        dataFiltered = FilterMissingData(dataMarker,'interPolate');
-        warning(['Percentage missing data: ' num2str(dataFiltered{4}) ' %	'])
-        disp(['Aantal waarschuwingen: ' num2str(dataFiltered{3})])
-        dataMarker = dataFiltered{1};
-    end
     coordinatenOPTI{kanaal} = [schaling*dataMarker(:,1) schaling*dataMarker(:,2) schaling*dataMarker(:,3)];
 end
 coordinaten = coordinatenOPTI;
