@@ -90,9 +90,9 @@ try
     end
     
     %% Filter the distance data by 'repairing' it with fillgaps()
-    data.DistancesNotFilled(data.Distances==Inf)=NaN;
+    data.Distances(data.Distances==Inf)=NaN;
     for nA = 1: num.Anchors
-        data.Distances(:,nA) = round(fillgaps(data.DistancesNotFilled(:,nA)));
+        data.Distances(:,nA) = round(fillgaps(data.Distances(:,nA)));
     end
     
     % round to nearest 10 to find a match in optitrack time

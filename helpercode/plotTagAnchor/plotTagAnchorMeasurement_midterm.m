@@ -29,8 +29,8 @@ if isfield(data,'TagPositions')
     
     set(gca,'LineWidth',1)
     
-    %     errvalloc = getErrorLocations(data.TagPositions,results);
-    %     errvaldis = getErrorDistances(data.AnchorPositions,data.TagPositions,results);
+    errvalloc = getErrorLocations(data.TagPositions,results);
+    errvaldis = getErrorDistances(data.AnchorPositions(:,1:2),data.TagPositions(:,1:2),results(:,1:2));
     %     title(['Error location: ',num2str(round(errvalloc)) '| distances: ' num2str(round(errvaldis))]);
     title('Example measurement Optitrack (green) and UWB (red)');
     

@@ -1,7 +1,7 @@
 function makeViolinPlotOfStaticDynamicLoS()
 close all; clc;
 
-set(0,'defaultTextInterpreter','none'); 
+set(0,'defaultTextInterpreter','none');
 
 if ~exist('apFolderMeasurements','var')
     apThisFile = fileparts(mfilename('fullpath'));
@@ -25,11 +25,11 @@ files = removeUselessFilesFromDirOutput(files);
 [filesStatic, filesDynamic] = differentiateBetweenStaticAndKnown(files);
 
 sErrorStatic = combineErrors(filesStatic);
-makeViolinPlotsOfDistances(sErrorStatic,'Violin plots of distances between trilateration and ground truth - STATIC LoS',apThisFile);
-makeBoxPlotsOfDistances(sErrorStatic,'Violin plots of distances between trilateration and ground truth - STATIC LoS',apThisFile);
+makeViolinPlotsOfDistances(sErrorStatic,'STATIC LoS',apThisFile);
+makeBoxPlotsOfDistances(sErrorStatic,'STATIC LoS',apThisFile);
 sErrorDynamic = combineErrors(filesDynamic);
-makeViolinPlotsOfDistances(sErrorDynamic,'Violin plots of distances between trilateration and ground truth - DYNAMIC LoS',apThisFile);
-makeBoxPlotsOfDistances(sErrorDynamic,'Violin plots of distances between trilateration and ground truth - DYNAMIC LoS',apThisFile);
+makeViolinPlotsOfDistances(sErrorDynamic,'DYNAMIC LoS',apThisFile);
+makeBoxPlotsOfDistances(sErrorDynamic,'DYNAMIC LoS',apThisFile);
 end
 
 
