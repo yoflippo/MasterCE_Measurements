@@ -72,15 +72,18 @@ try
     minLengthData = Inf;
     
     num.Anchors = length(pozyx.data);
+    diffTimes = [];
     for nF = 1:num.Anchors
         minLengthData = min(minLengthData,length(table2array(pozyx.data(nF).range)));
-        times(nF) = table2array(pozyx.data(nF).time(1,1));
+        startTimes(nF) = pozyx.data(nF).time{1,1};
+        endTimes(nF) = pozyx.data(nF).time{end,1};
+        diffTimes = [diffTimes; diff(pozyx.data(nF).time{:,1})];
     end
     
     % Check which one sample is first IN TIME
-    [~,idx] = sort(times);
+    [~,idx] = sort(startTimes);
     
-    % Assign the values
+    % Assign the values to the timestamps
     for nF = 1:minLengthData
         for nA = idx
             data.Distances(nF,nA) = table2array(pozyx.data(nA).range(nF,1));
@@ -88,6 +91,17 @@ try
             data.DistancesTimes(nF) = table2array(pozyx.data(idx(1)).time(nF,1));
         end
     end
+    
+    %% INTERPOLATE THE VALUES
+    newTimeVector = min(startTimes):mean(diffTimes)/4:min(endTimes)';
+    for nA = 1:num.Anchors
+        data.Distances2(:,nA) = interp1(pozyx.data(nA).time{:,1},pozyx.data(nA).range{:,1},newTimeVector)';
+    end
+    data.DistancesTimes0 = data.DistancesTimes;
+    data.DistancesTimes = newTimeVector';
+    data.Distances0 = data.Distances;
+    data.Distances = data.Distances2;
+    % END OF INTERPOLATION
     
     %% Filter the distance data by 'repairing' it with fillgaps()
     data.Distances(data.Distances==Inf)=NaN;
@@ -106,7 +120,7 @@ try
     for nT = 1:length(timesRoundNears)
         idx = find(timesRoundNears(nT)==data.TagPositionsTime);
         if isempty(idx)
-%             keyboard % something is wrong
+            %             keyboard % something is wrong
             return;
         end
         data.TagPositions(nT,1:3) = optitrack.Tag.Coordinates(idx(1),:)*10; %*10 to go from cm to mm
@@ -120,7 +134,7 @@ try
     save(replace(file.Opti.full,'_optitrack','_4solver'),'data');
 catch err
     warning(err.message);
-%     keyboard
+    %     keyboard
 end
 end
 

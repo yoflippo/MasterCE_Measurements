@@ -1,6 +1,5 @@
 function makeViolinPlotOfStaticDynamicLoS()
 close all; clc;
-
 set(0,'defaultTextInterpreter','none');
 
 if ~exist('apFolderMeasurements','var')
@@ -25,18 +24,20 @@ files = removeUselessFilesFromDirOutput(files);
 [filesStatic, filesDynamic] = differentiateBetweenStaticAndKnown(files);
 
 sErrorStatic = combineErrors(filesStatic);
-makeViolinPlotsOfDistances(sErrorStatic,'STATIC LoS',apThisFile);
+makeViolinPlotsOfDistances(sErrorStatic,'Violin plots of distances between localization algorithm and optitrack - Static LoS',apThisFile);
 makeBoxPlotsOfDistances(sErrorStatic,'STATIC LoS',apThisFile);
 sErrorDynamic = combineErrors(filesDynamic);
-makeViolinPlotsOfDistances(sErrorDynamic,'DYNAMIC LoS',apThisFile);
+makeViolinPlotsOfDistances(sErrorDynamic,'Violin plots of distances between localization algorithm and optitrack - Dynamic LoS',apThisFile);
 makeBoxPlotsOfDistances(sErrorDynamic,'DYNAMIC LoS',apThisFile);
+
+cd(apThisFile);
 end
 
 
 function makeViolinPlotsOfDistances(structErrors,titlePlot,apThisFile)
-figure('units','normalized','outerposition',[0 0 0.4 0.5],'Visible','on');
+figure('units','normalized','outerposition',[0 0 0.4 0.5]*1.5,'Visible','on');
 violinplot([structErrors.murphy' structErrors.larsson' structErrors.faber'], ...
-    {'Murphy' 'Larsson' 'Faber'},'MedianColor',[1 0 0],'ShowMean',true)
+    getXLabelsWithDuration(structErrors),'MedianColor',[1 0 0],'ShowMean',true)
 grid on; grid minor; title(titlePlot);
 ylabel('Distance from groundtruth [mm]');
 
@@ -45,13 +46,24 @@ setFigureSpecs();
 ylim([0 300]);
 oldPath = pwd;
 cd(apThisFile);
-saveTightFigure(gcf,['ViolinPlot_' replace(extractAfter(titlePlot,' - '),' ','_') '.png']);
+saveTightFigure(gcf,['ViolinPlotTrilat_' replace(extractAfter(titlePlot,' - '),' ','_') '.png']);
 cd(oldPath);
 end
 
 
+function xlabels = getXLabelsWithDuration(values)
+rounding = 1;
+meantxt = num2str(round(mean(values.larsson),rounding));
+xlabels{2} = ['Larsson (\mu = ' meantxt ')'];
+meantxt = num2str(round(mean(values.murphy),rounding));
+xlabels{1} = ['Murphy (\mu = ' meantxt ')'];
+meantxt = num2str(round(mean(values.faber),rounding));
+xlabels{3} = ['Faber (\mu = ' meantxt ')'];
+end
+
+
 function makeBoxPlotsOfDistances(structErrors,titlePlot,apThisFile)
-figure('units','normalized','outerposition',[0 0 0.4 0.5],'Visible','on');
+figure('units','normalized','outerposition',[0 0 0.4 0.5]*1.5,'Visible','on');
 bh = boxplot([structErrors.murphy' structErrors.larsson' structErrors.faber'], ...
     {'Murphy' 'Larsson' 'Faber'},'Notch','on');
 
@@ -72,7 +84,7 @@ ylim([0 600]);
 
 oldPath = pwd;
 cd(apThisFile);
-saveTightFigure(gcf,['BoxPlot_' replace(extractAfter(titlePlot,' - '),' ','_') '.png']);
+saveTightFigure(gcf,['BoxPlotTrilat_' replace(extractAfter(titlePlot,' - '),' ','_') '.png']);
 cd(oldPath);
 end
 
@@ -122,14 +134,11 @@ function setFigureSpecs(fontsize)
 if not(exist('fontsize','var'))
     fontsize = 12;
 end
-
 Fh = gcf;
 Kids = Fh.Children;
-
 AxAll = findobj(Kids,'Type','Axes');
 Ax1 = AxAll(1);
 set(Ax1,'LineWidth',0.5)
-
 setFont(Ax1,fontsize)
 end
 
@@ -138,10 +147,8 @@ function setFont(ax,fontsize)
 ax.FontSize = fontsize;
 ax.XAxis.FontSize = fontsize;
 ax.YAxis.FontSize = fontsize;
-
 ax.XAxis.Label.FontSize = fontsize;
 ax.YAxis.Label.FontSize = fontsize;
-
 ax.YAxis.Label.FontWeight = 'bold';
 ax.XAxis.Label.FontWeight = 'bold';
 end

@@ -4,7 +4,7 @@ addpath(genpath(ap.code_measurements));
 ap.files = findSubFolderPath(pwd,'MEASUREMENTS','MEASUREMENTS_20200826');
 convertC3D_to_MAT_WheelchairMeasurements(ap.files);
 
-convert_pozyx_to_MAT();
+convert_pozyx_to_MAT(ap.files);
 addpath(genpath(ap.code_measurements));
 createTrilaterationSolverMatFile_run(ap.files);
 

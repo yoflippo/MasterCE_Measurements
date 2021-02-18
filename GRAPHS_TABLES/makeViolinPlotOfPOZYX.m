@@ -50,7 +50,8 @@ end
 
 function makeViolinPlot(errorsStat,errorsDyn,titlePlot,apThisFile)
 figure('units','normalized','outerposition',[0 0 0.4 0.5]*1.5,'Visible','on');
-violinplot([[errorsStat; errorsStat] errorsDyn(1:length(errorsStat)*2)], {'Error static' 'Error dynamic'},'MedianColor',[1 0 0],'ShowMean',true)
+errorvalues = [errorsStat errorsDyn(1:length(errorsStat))];
+violinplot(errorvalues,getXLabelsWithDuration(errorvalues),'MedianColor',[1 0 0],'ShowMean',true)
 grid on; grid minor; title(titlePlot);
 ylabel('Error, distance from groundtruth [mm]');
 axis tight
@@ -59,7 +60,7 @@ setFigureSpecs();
 ylim([0 300]);
 oldPath = pwd;
 cd(apThisFile);
-saveTightFigure(gcf,['ViolinPlot_' titlePlot '.png']);
+saveTightFigure(gcf,['ViolinPlotPozyx_' titlePlot '.png']);
 cd(oldPath);
 end
 
@@ -85,4 +86,12 @@ ax.XAxis.Label.FontSize = fontsize;
 ax.YAxis.Label.FontSize = fontsize;
 ax.YAxis.Label.FontWeight = 'bold';
 ax.XAxis.Label.FontWeight = 'bold';
+end
+
+function xlabels = getXLabelsWithDuration(values)
+rounding = 1;
+meantxt = num2str(round(mean(values(:,1)),rounding));
+xlabels{1} = ['Error static (\mu = ' meantxt ')'];
+meantxt = num2str(round(mean(values(:,2)),rounding));
+xlabels{2} = ['Error dynamic (\mu = ' meantxt ')'];
 end

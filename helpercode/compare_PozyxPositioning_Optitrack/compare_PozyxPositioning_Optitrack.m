@@ -1,5 +1,6 @@
 function compare_PozyxPositioning_Optitrack()
 close all; clc;
+set(0,'defaultTextInterpreter','none');
 
 apThisFile = fileparts(mfilename('fullpath'));
 cd(apThisFile);

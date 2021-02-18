@@ -1,8 +1,13 @@
-function convert_pozyx_to_MAT()
+function convert_pozyx_to_MAT(apfiles)
 
-apThisFile = fileparts(mfilename('fullpath'));
-cd(apThisFile);
-cd(findSubFolderPath(pwd,'MEASUREMENTS','MEASUREMENT_DATA'));
+if not(exist('apfiles','var')) || not(isempty(apfiles))
+    cd(apfiles)
+else
+    apThisFile = fileparts(mfilename('fullpath'));
+    cd(apThisFile);
+    cd(findSubFolderPath(pwd,'MEASUREMENTS','MEASUREMENT_DATA'));
+end
+
 files = dir(['**' filesep '*.txt']);
 files(~contains({files.name},'(')) = [];
 files(~contains({files.name},')')) = [];
