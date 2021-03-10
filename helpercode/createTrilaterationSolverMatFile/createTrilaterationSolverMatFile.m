@@ -92,16 +92,16 @@ try
         end
     end
     
-    %% INTERPOLATE THE VALUES
-    newTimeVector = min(startTimes):mean(diffTimes)/4:min(endTimes)';
-    for nA = 1:num.Anchors
-        data.Distances2(:,nA) = interp1(pozyx.data(nA).time{:,1},pozyx.data(nA).range{:,1},newTimeVector)';
-    end
-    data.DistancesTimes0 = data.DistancesTimes;
-    data.DistancesTimes = newTimeVector';
-    data.Distances0 = data.Distances;
-    data.Distances = data.Distances2;
-    % END OF INTERPOLATION
+%     %% INTERPOLATE THE VALUES
+%     newTimeVector = min(startTimes):mean(diffTimes)/4:min(endTimes)';
+%     for nA = 1:num.Anchors
+%         data.Distances2(:,nA) = interp1(pozyx.data(nA).time{:,1},pozyx.data(nA).range{:,1},newTimeVector)';
+%     end
+%     data.DistancesTimes0 = data.DistancesTimes;
+%     data.DistancesTimes = newTimeVector';
+%     data.Distances0 = data.Distances;
+%     data.Distances = data.Distances2;
+%     % END OF INTERPOLATION
     
     %% Filter the distance data by 'repairing' it with fillgaps()
     data.Distances(data.Distances==Inf)=NaN;

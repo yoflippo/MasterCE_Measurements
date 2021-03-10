@@ -1,6 +1,6 @@
 function convert_pozyx_to_MAT(apfiles)
 
-if not(exist('apfiles','var')) || not(isempty(apfiles))
+if exist('apfiles','var') && not(isempty(apfiles))
     cd(apfiles)
 else
     apThisFile = fileparts(mfilename('fullpath'));

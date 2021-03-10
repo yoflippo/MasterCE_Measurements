@@ -28,6 +28,8 @@ for nF = 1:length(files)
     if contains(ap.CurrFileName,'ranging')
         
         [resStat,resDyn] = cleanAndFormatRangingData(ap);
+        averageStatRangingVel = mean(resStat.matrix(:,5))
+        averageDynRangingVel = mean(resDyn.matrix(:,5))
         dataFormat = {'%.0f',1,'%.1f',6};
         writeTexFile(resStat.matrix,'columnlabels',resStat.colNames,'title',resStat.title, ...
             'filename',resStat.outputFile,'label', resStat.label,'dataformat',dataFormat);
@@ -36,6 +38,8 @@ for nF = 1:length(files)
     else
         %% Create table for Pozyx positioning results
         [resStat,resDyn] = cleanAndFormat_POZYXPOSTIONING_Data(ap);
+        averageStatPozyxVel = mean(resStat.matrix(:,3))
+        averageDynPozyxVel = mean(resDyn.matrix(:,3))
         dataFormat = {'%.0f',1,'%.1f',4};
         writeTexFile(resStat.matrix,'columnlabels',resStat.colNames,'title',resStat.title, ...
             'filename',resStat.outputFile,'label', resStat.label,'dataformat',dataFormat);
@@ -131,6 +135,7 @@ end
         
         idx2Remove = contains(outputTable.file,'HF3');
         idx2Remove = idx2Remove | contains(outputTable.file,'90_');
+        idx2Remove = idx2Remove | contains(outputTable.file,'personinchair');
         %         idx2Remove = idx2Remove | contains(outputTable.file,'(~)');
         idx2Remove = idx2Remove | contains(outputTable.file,'_03');
         tab = outputTable(not(idx2Remove),:);

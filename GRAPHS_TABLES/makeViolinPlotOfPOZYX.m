@@ -1,4 +1,8 @@
-function makeViolinPlotOfPOZYX()
+function makeViolinPlotOfPOZYX(apOutDir)
+global apFigureOut; apFigureOut = apOutDir;
+if not(exist('apFigureOut')) || isempty(apFigureOut)
+    apFigureOut = pwd;
+end
 apThisFile = fileparts(mfilename('fullpath'));
 cd(apThisFile);
 ap.measurements = findSubFolderPath(pwd,'UWB','MEASUREMENT_DATA');
@@ -15,7 +19,7 @@ filesStatic = files(contains({files.name},'(S)'));
 errorValuesDynamic = concatenateErrorDistancePozyxOptitrack(filesDynamic);
 errorValuesStatic = concatenateErrorDistancePozyxOptitrack(filesStatic);
 
-makeViolinPlot(errorValuesStatic, errorValuesDynamic,'Violin plots of distance between Pozyx localization and Optitrack - LoS',apThisFile);
+makeViolinPlot(errorValuesStatic, errorValuesDynamic,'Pozyx localization error - LoS',apThisFile);
 cd(apThisFile);
 rmpath(genpath(ap.measurements));
 rmpath(genpath(ap.simulation));
@@ -55,12 +59,13 @@ violinplot(errorvalues,getXLabelsWithDuration(errorvalues),'MedianColor',[1 0 0]
 grid on; grid minor; title(titlePlot);
 ylabel('Error, distance from groundtruth [mm]');
 axis tight
-
+set(gca,'FontSize',20)
 setFigureSpecs();
 ylim([0 300]);
 oldPath = pwd;
 cd(apThisFile);
-saveTightFigure(gcf,['ViolinPlotPozyx_' titlePlot '.png']);
+global apFigureOut;
+saveTightFigure(gcf,fullfile(apFigureOut,['ViolinPlotPozyx_' titlePlot '.png']));
 cd(oldPath);
 end
 

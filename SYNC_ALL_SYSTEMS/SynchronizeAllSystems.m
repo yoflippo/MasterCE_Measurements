@@ -186,6 +186,7 @@ end
 
 function [opti,wmpm,uwb2] = syncOptiUwbWmpm(opti,wmpm,uwb,sync)
 opti.coord = cutFromBeginOfStruct(opti,sync(2));
+opti.notfilled.coord = cutFromBeginOfStruct(opti.notfilled,sync(2));
 opti.time = getTimeVector(100,opti.coord.x);
 
 [uwb2.coord, cutIdx] = cutUWBbasedOnOptitrackTiming(100,sync(2), ...

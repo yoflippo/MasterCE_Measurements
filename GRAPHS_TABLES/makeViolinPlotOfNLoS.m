@@ -1,5 +1,5 @@
-function makeViolinPlotOfStaticDynamicLoS(apOutDir)
-global apFigureOut; apFigureOut = apOutDir;
+function makeViolinPlotOfNLoS(apFigureOut)
+global apFigureOut;
 if not(exist('apFigureOut')) || isempty(apFigureOut)
     apFigureOut = pwd;
 end
@@ -23,16 +23,11 @@ addpath(genpath(ap.simulation));
 cd(ap.measurements);
 files = dir(['**' filesep '*_results_solver.mat']);
 files = makeFullPathFromDirOutput(files);
-
 files = removeUselessFilesFromDirOutput(files);
-[filesStatic, filesDynamic] = differentiateBetweenStaticAndKnown(files);
 
-sErrorStatic = combineErrors(filesStatic);
-makeViolinPlotsOfDistances(sErrorStatic,'Distance errors - Static LoS',apThisFile);
-makeBoxPlotsOfDistances(sErrorStatic,'STATIC LoS',apThisFile);
-sErrorDynamic = combineErrors(filesDynamic);
-makeViolinPlotsOfDistances(sErrorDynamic,'Distance errors - Dynamic LoS',apThisFile);
-makeBoxPlotsOfDistances(sErrorDynamic,'DYNAMIC LoS',apThisFile);
+sErrorStatic = combineErrors(files);
+makeViolinPlotsOfDistances(sErrorStatic,'Violin plots the distance error - dynamic NLoS',apThisFile);
+makeBoxPlotsOfDistances(sErrorStatic,'DYNAMIC NLoS',apThisFile);
 
 cd(apThisFile);
 end
@@ -107,6 +102,11 @@ for nF = 1:length(files)
     catch err
     end
 end
+idxs = emurphy>1000 | elarsson>1000 | efaber > 1000;
+emurphy(idxs) = [];
+elarsson(idxs) = [];
+efaber(idxs) = [];
+
 e.larsson = elarsson;
 e.murphy = emurphy;
 e.faber = efaber;
@@ -114,11 +114,8 @@ end
 
 
 function files = removeUselessFilesFromDirOutput(files)
-files(contains({files.name},'(~)')) = [];
-files(contains({files.name},'W_RANG')) = [];
-files(contains({files.name},'(S)_03')) = []; %weird measurements
-files(contains({files.name},'HF3')) = [];
-files(contains({files.name},'90')) = [];
+files(~contains({files.name},'W_RANG')) = [];
+files(~contains({files.name},'RS_')) = [];
 end
 
 
